@@ -21,7 +21,17 @@ import {
   updateAdminUser,
   uploadAdminImage,
 } from "@/lib/api";
-import { Loader2, Lock, Unlock } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  CreditCard,
+  Loader2,
+  Lock,
+  Trash2,
+  Unlock,
+  Users as UsersIcon,
+} from "lucide-react";
 
 type AdminData = {
   recipes: Recipe[];
@@ -51,6 +61,7 @@ const Admin = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [activeUserAction, setActiveUserAction] = useState<number | null>(null);
+  const [activePanel, setActivePanel] = useState<"create" | "recipes" | "users" | "payments" | "stats">("create");
 
   const loadAdminData = useCallback(
     async (authHeader: string) => {
@@ -369,6 +380,406 @@ const Admin = () => {
     };
   }, [adminData]);
 
+  const adminPanels: Array<{
+    id: typeof activePanel;
+    label: string;
+    description: string;
+    icon: typeof ClipboardList;
+  }> = [
+    {
+      id: "create",
+      label: "Nova receita",
+      description: "Publicar experiencias rapidamente",
+      icon: ClipboardList,
+    },
+    {
+      id: "recipes",
+      label: "Receitas",
+      description: "Gerir visibilidade e edicoes",
+      icon: BookOpen,
+    },
+    {
+      id: "users",
+      label: "Utilizadores",
+      description: "Liberar acessos e atualizar dados",
+      icon: UsersIcon,
+    },
+    {
+      id: "payments",
+      label: "Pagamentos",
+      description: "Consultar comprovacoes da Stripe",
+      icon: CreditCard,
+    },
+    {
+      id: "stats",
+      label: "Estatisticas",
+      description: "Visao geral do ecossistema",
+      icon: BarChart3,
+    },
+  ];
+
+  const renderDataFallback = (message: string) => (
+    <Card className="border border-border/60 bg-card/80">
+      <CardHeader>
+        <CardTitle>Sincronizar dados</CardTitle>
+        <CardDescription>{message}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">
+          Clique no botao abaixo para solicitar novamente os dados do backend. Certifique-se de que o servidor esta
+          acessivel.
+        </p>
+      </CardContent>
+      <CardFooter>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => admin && loadAdminData(admin.header)}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Atualizando...
+            </>
+          ) : (
+            "Recarregar dados"
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+
+  const renderPanelContent = () => {
+    switch (activePanel) {
+      case "create":
+        return (
+          <div className="space-y-8">
+            <Card className="border border-border/60 bg-card/80">
+              <CardHeader>
+                <CardTitle>Adicionar nova receita</CardTitle>
+                <CardDescription>Preencha os campos para publicar imediatamente para os assinantes.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCreateRecipe} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="recipe-title">Titulo</Label>
+                    <Input
+                      id="recipe-title"
+                      placeholder="Jantar tematico surpresa"
+                      value={recipeForm.title}
+                      onChange={(event) => setRecipeForm((prev) => ({ ...prev, title: event.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="recipe-category">Categoria</Label>
+                    <Input
+                      id="recipe-category"
+                      placeholder="desafios, rituais..."
+                      value={recipeForm.category}
+                      onChange={(event) => setRecipeForm((prev) => ({ ...prev, category: event.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="recipe-image-url">Imagem (opcional)</Label>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <Input
+                        id="recipe-image-url"
+                        type="url"
+                        placeholder="https://cdn.seusite.com/imagem.jpg"
+                        value={recipeForm.image_url ?? ""}
+                        onChange={(event) => setRecipeForm((prev) => ({ ...prev, image_url: event.target.value }))}
+                      />
+                      <Input
+                        id="recipe-image-file"
+                        type="file"
+                        accept="image/*"
+                        disabled={isUploadingImage}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+                          void handleRecipeImageUpload(file);
+                          event.target.value = "";
+                        }}
+                      />
+                    </div>
+                    {isUploadingImage && <p className="text-xs text-muted-foreground">Carregando imagem...</p>}
+                    {imageUploadError && <p className="text-xs text-destructive">{imageUploadError}</p>}
+                    {recipeForm.image_url && (
+                      <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/40 p-3 text-xs text-muted-foreground">
+                        <img
+                          src={recipeForm.image_url}
+                          alt="Preview da receita"
+                          className="h-16 w-16 rounded object-cover"
+                        />
+                        <span className="break-all">{recipeForm.image_url}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="recipe-content">Conteudo</Label>
+                    <Textarea
+                      id="recipe-content"
+                      rows={6}
+                      placeholder="1. Prepare o ambiente...\n2. Defina as regras...\n3. Sugestoes de conversa..."
+                      value={recipeForm.content}
+                      onChange={(event) => setRecipeForm((prev) => ({ ...prev, content: event.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background/40 p-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                    <span>Visibilidade atual: {recipeForm.is_public ? "publica" : "premium"}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setRecipeForm((prev) => ({ ...prev, is_public: !prev.is_public }))}
+                    >
+                      {recipeForm.is_public ? "Marcar como premium" : "Marcar como publica"}
+                    </Button>
+                  </div>
+                  <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publicando...
+                      </>
+                    ) : (
+                      "Publicar receita"
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border/60 bg-card/80">
+              <CardHeader>
+                <CardTitle>Boas praticas editoriais</CardTitle>
+                <CardDescription>Garanta consistencia e clareza em cada experiencia publicada.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-lg border border-border/50 bg-background/40 p-4 text-sm text-muted-foreground">
+                  <p className="font-semibold text-foreground">Tom de voz alinhado</p>
+                  <p className="mt-2">
+                    Use linguagem acolhedora e direta. Inclua sempre beneficios claros e tempo estimado da atividade.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-background/40 p-4 text-sm text-muted-foreground">
+                  <p className="font-semibold text-foreground">Checklist rapido</p>
+                  <p className="mt-2">
+                    Inclua materiais necessarios, passo a passo numerado e uma sugestao de conversa para finalizar.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      case "recipes":
+        if (!adminData) return renderDataFallback("Carregue as receitas para gerir visibilidade e conteudos.");
+        return (
+          <div className="space-y-6">
+            <Card className="border border-border/60 bg-card/80">
+              <CardHeader>
+                <CardTitle>Receitas cadastradas</CardTitle>
+                <CardDescription>Altere visibilidade, edite ou remova experiencias rapidamente.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {isLoading && adminData.recipes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Carregando receitas...</p>
+                ) : adminData.recipes.length > 0 ? (
+                  adminData.recipes.map((recipe) => (
+                    <article
+                      key={recipe.id}
+                      className="flex flex-col gap-3 rounded-lg border border-border/50 bg-background/40 p-4 transition hover:border-primary/50 hover:bg-primary/5 md:flex-row md:items-center md:justify-between"
+                    >
+                      <div className="space-y-1">
+                        {recipe.image_url && (
+                          <img
+                            src={recipe.image_url}
+                            alt={`Imagem da receita ${recipe.title}`}
+                            className="h-24 w-full rounded object-cover md:h-20 md:w-32"
+                          />
+                        )}
+                        <p className="text-lg font-semibold text-foreground">{recipe.title}</p>
+                        <p className="text-sm text-muted-foreground">{recipe.content}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+                          <span>{recipe.category ?? "sem categoria"}</span>
+                          <span>-</span>
+                          <span>{recipe.is_public ? "publica" : "premium"}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleToggleRecipe(recipe)} disabled={isLoading}>
+                          {recipe.is_public ? (
+                            <>
+                              <Lock className="mr-2 h-4 w-4" /> Tornar premium
+                            </>
+                          ) : (
+                            <>
+                              <Unlock className="mr-2 h-4 w-4" /> Tornar publica
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteRecipe(recipe.id)}
+                          disabled={isLoading}
+                        >
+                          <Trash2 className="mr-1.5 h-4 w-4" />
+                          Apagar
+                        </Button>
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma receita cadastrada ate o momento. Utilize o painel de nova receita para começar.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+      case "users":
+        if (!adminData) return renderDataFallback("Carregue a lista de utilizadores para gerir acessos.");
+        return (
+          <Card className="border border-border/60 bg-card/80">
+            <CardHeader>
+              <CardTitle>Utilizadores registados</CardTitle>
+              <CardDescription>Liberar acesso premium, atualizar e-mail ou redefinir senha.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              {adminData.users.length ? (
+                adminData.users.map((item) => (
+                  <div key={item.id} className="space-y-3 rounded-lg border border-border/40 bg-background/40 p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="space-y-1">
+                        <span className="font-semibold text-foreground">{item.email}</span>
+                        <p className="text-xs uppercase tracking-widest text-muted-foreground">ID {item.id}</p>
+                      </div>
+                      <Badge variant={item.has_paid ? "secondary" : "outline"}>
+                        {item.has_paid ? "Pago" : "Pendente"}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={item.has_paid ? "outline" : "secondary"}
+                        size="sm"
+                        onClick={() => handleToggleUserPaid(item.id, item.has_paid)}
+                        disabled={activeUserAction === item.id}
+                      >
+                        {activeUserAction === item.id ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Atualizando...
+                          </>
+                        ) : item.has_paid ? (
+                          "Marcar como pendente"
+                        ) : (
+                          "Liberar acesso premium"
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdateUserEmail(item.id, item.email)}
+                        disabled={activeUserAction === item.id}
+                      >
+                        Atualizar e-mail
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary hover:text-primary"
+                        onClick={() => handleResetUserPassword(item.id)}
+                        disabled={activeUserAction === item.id}
+                      >
+                        Redefinir senha
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>Nenhum usuario registado encontrado.</p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      case "payments":
+        if (!adminData) return renderDataFallback("Carregue os pagamentos recentes para conferir acessos.");
+        return (
+          <Card className="border border-border/60 bg-card/80">
+            <CardHeader>
+              <CardTitle>Pagamentos recentes</CardTitle>
+              <CardDescription>Conferencia rapida dos pagamentos processados.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              {formattedPayments.length ? (
+                formattedPayments.map((payment) => (
+                  <div key={payment.id} className="rounded-lg border border-border/40 bg-background/40 p-3 leading-relaxed">
+                    <p className="font-semibold text-foreground">{payment.email}</p>
+                    <p>{payment.amount}</p>
+                    <p className="text-xs uppercase tracking-widest">
+                      {payment.timestamp ? new Date(payment.timestamp).toLocaleString("pt-BR") : "Sem data"}
+                    </p>
+                    {payment.session_id && (
+                      <p className="text-[11px] text-muted-foreground">Sessao: {payment.session_id}</p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p>Nenhum pagamento encontrado.</p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      case "stats":
+      default:
+        if (!adminStatsSummary) return renderDataFallback("Carregue os indicadores para visualizar o panorama geral.");
+        return (
+          <Card className="border border-border/60 bg-card/80">
+            <CardHeader>
+              <CardTitle>Estatisticas gerais</CardTitle>
+              <CardDescription>Resumo gerado diretamente pela API.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
+              <div>
+                <p className="font-semibold text-foreground">Utilizadores</p>
+                <p>Total: {adminStatsSummary.users.total}</p>
+                <p>Pagos: {adminStatsSummary.users.paid}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Receitas</p>
+                <p>Total: {adminStatsSummary.recipes.total}</p>
+                <p>Publicas: {adminStatsSummary.recipes.public}</p>
+                <p>Premium: {adminStatsSummary.recipes.private}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Pagamentos</p>
+                <p>Faturamento: {adminStatsSummary.payments.totalFormatted}</p>
+                <p>Moeda: {adminStatsSummary.payments.currencyCode}</p>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => admin && loadAdminData(admin.header)}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Atualizando...
+                  </>
+                ) : (
+                  "Atualizar dados"
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        );
+    }
+  };
+
   if (!admin) {
     return (
       <div className="min-h-screen bg-background">
@@ -454,298 +865,53 @@ const Admin = () => {
           {dashboardError && <p className="text-sm text-destructive">{dashboardError}</p>}
         </section>
 
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-          <Card className="border border-border/60 bg-card/80">
-            <CardHeader>
-              <CardTitle>Adicionar nova receita</CardTitle>
-              <CardDescription>Preencha os campos para publicar imediatamente para os assinantes.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCreateRecipe} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="recipe-title">Titulo</Label>
-                  <Input
-                    id="recipe-title"
-                    placeholder="Jantar tematico surpresa"
-                    value={recipeForm.title}
-                    onChange={(event) => setRecipeForm((prev) => ({ ...prev, title: event.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="recipe-category">Categoria</Label>
-                  <Input
-                    id="recipe-category"
-                    placeholder="desafios, rituais..."
-                    value={recipeForm.category}
-                    onChange={(event) => setRecipeForm((prev) => ({ ...prev, category: event.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="recipe-image-url">Imagem (opcional)</Label>
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Input
-                      id="recipe-image-url"
-                      type="url"
-                      placeholder="https://cdn.seusite.com/imagem.jpg"
-                      value={recipeForm.image_url ?? ""}
-                      onChange={(event) => setRecipeForm((prev) => ({ ...prev, image_url: event.target.value }))}
-                    />
-                    <Input
-                      id="recipe-image-file"
-                      type="file"
-                      accept="image/*"
-                      disabled={isUploadingImage}
-                      onChange={(event) => {
-                        const file = event.target.files?.[0] ?? null;
-                        void handleRecipeImageUpload(file);
-                        event.target.value = "";
-                      }}
-                    />
-                  </div>
-                  {isUploadingImage && <p className="text-xs text-muted-foreground">Carregando imagem...</p>}
-                  {imageUploadError && <p className="text-xs text-destructive">{imageUploadError}</p>}
-                  {recipeForm.image_url && (
-                    <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/40 p-3 text-xs text-muted-foreground">
-                      <img
-                        src={recipeForm.image_url}
-                        alt="Preview da receita"
-                        className="h-16 w-16 rounded object-cover"
-                      />
-                      <span className="break-all">{recipeForm.image_url}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="recipe-content">Conteudo</Label>
-                  <Textarea
-                    id="recipe-content"
-                    rows={6}
-                    placeholder="1. Prepare o ambiente...\n2. Defina as regras...\n3. Sugestoes de conversa..."
-                    value={recipeForm.content}
-                    onChange={(event) => setRecipeForm((prev) => ({ ...prev, content: event.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background/40 p-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                  <span>Visibilidade atual: {recipeForm.is_public ? "publica" : "premium"}</span>
-                  <Button
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,240px)_1fr]">
+          <aside className="lg:sticky lg:top-28">
+            <div className="flex gap-3 overflow-x-auto rounded-2xl border border-border/60 bg-card/80 p-3 lg:flex-col lg:overflow-visible">
+              {adminPanels.map(({ id, label, description, icon: Icon }) => {
+                const isActive = activePanel === id;
+                return (
+                  <button
+                    key={id}
                     type="button"
-                    variant="outline"
-                    onClick={() => setRecipeForm((prev) => ({ ...prev, is_public: !prev.is_public }))}
+                    onClick={() => setActivePanel(id)}
+                    className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:flex-row lg:items-center lg:gap-3 ${
+                      isActive
+                        ? "border-primary/60 bg-primary/10 text-primary"
+                        : "border-border/50 bg-background/40 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                    }`}
                   >
-                    {recipeForm.is_public ? "Marcar como premium" : "Marcar como publica"}
-                  </Button>
-                </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publicando...
-                    </>
-                  ) : (
-                    "Publicar receita"
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="font-semibold">{label}</span>
+                    </div>
+                    <span className="mt-2 text-xs text-muted-foreground lg:mt-0 lg:text-[11px] lg:font-normal">
+                      {description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
 
-          {adminStatsSummary && (
-            <Card className="border border-border/60 bg-card/80">
-              <CardHeader>
-                <CardTitle>Estatisticas gerais</CardTitle>
-                <CardDescription>Resumo gerado diretamente pela API.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm text-muted-foreground">
-                <div>
-                  <p className="font-semibold text-foreground">Utilizadores</p>
-                  <p>Total: {adminStatsSummary.users.total}</p>
-                  <p>Pagos: {adminStatsSummary.users.paid}</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Receitas</p>
-                  <p>Total: {adminStatsSummary.recipes.total}</p>
-                  <p>Publicas: {adminStatsSummary.recipes.public}</p>
-                  <p>Premium: {adminStatsSummary.recipes.private}</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Pagamentos</p>
-                  <p>Faturamento: {adminStatsSummary.payments.totalFormatted}</p>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => admin && loadAdminData(admin.header)}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Atualizando...
-                    </>
-                  ) : (
-                    "Atualizar dados"
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
+          <section className="space-y-8">{renderPanelContent()}</section>
         </div>
 
-        <Card className="border border-border/60 bg-card/80">
+        <Card className="border border-border/60 bg-card/70">
           <CardHeader>
-            <CardTitle>Receitas cadastradas</CardTitle>
-            <CardDescription>Alterar visibilidade ou remover conteudo rapidamente.</CardDescription>
+            <CardTitle>Precisa de algo fora do painel?</CardTitle>
+            <CardDescription>Fale direto com o time editorial caso necessite suporte personalizado.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {isLoading && !adminData ? (
-              <p className="text-sm text-muted-foreground">Carregando receitas...</p>
-            ) : adminData && adminData.recipes.length > 0 ? (
-                adminData.recipes.map((recipe) => (
-                  <article
-                    key={recipe.id}
-                    className="flex flex-col gap-3 rounded-lg border border-border/50 bg-background/40 p-4 transition hover:border-primary/50 hover:bg-primary/5 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div className="space-y-1">
-                      {recipe.image_url && (
-                        <img
-                          src={recipe.image_url}
-                          alt={`Imagem da receita ${recipe.title}`}
-                          className="h-24 w-full rounded object-cover md:h-20 md:w-32"
-                        />
-                      )}
-                      <p className="text-lg font-semibold text-foreground">{recipe.title}</p>
-                      <p className="text-sm text-muted-foreground">{recipe.content}</p>
-                      <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-                      <span>{recipe.category ?? "sem categoria"}</span>
-                      <span>-</span>
-                      <span>{recipe.is_public ? "publica" : "premium"}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleToggleRecipe(recipe)} disabled={isLoading}>
-                      {recipe.is_public ? (
-                        <>
-                          <Lock className="mr-2 h-4 w-4" /> Tornar premium
-                        </>
-                      ) : (
-                        <>
-                          <Unlock className="mr-2 h-4 w-4" /> Tornar publica
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleDeleteRecipe(recipe.id)}
-                      disabled={isLoading}
-                    >
-                      Excluir
-                    </Button>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Nenhuma receita cadastrada ate o momento. Adicione uma acima para comecar.
-              </p>
-            )}
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>
+              Envie ideias de novas experiencias, relatos de sucesso ou solicitacoes especiais. Respondemos em ate
+              24 horas uteis.
+            </p>
+            <Button variant="outline" asChild className="w-full sm:w-auto">
+              <a href="mailto:contato@receitasdeamor.com">Contato editorial</a>
+            </Button>
           </CardContent>
         </Card>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="border border-border/60 bg-card/80">
-            <CardHeader>
-              <CardTitle>Usuarios registados</CardTitle>
-              <CardDescription>Status de pagamento e acesso.</CardDescription>
-            </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                {adminData?.users.length ? (
-                  adminData.users.map((item) => (
-                    <div
-                      key={item.id}
-                      className="space-y-3 rounded-lg border border-border/40 bg-background/40 p-4"
-                    >
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="space-y-1">
-                          <span className="font-semibold text-foreground">{item.email}</span>
-                          <p className="text-xs uppercase tracking-widest text-muted-foreground">ID {item.id}</p>
-                        </div>
-                        <Badge variant={item.has_paid ? "secondary" : "outline"}>
-                          {item.has_paid ? "Pago" : "Pendente"}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant={item.has_paid ? "outline" : "secondary"}
-                          size="sm"
-                          onClick={() => handleToggleUserPaid(item.id, item.has_paid)}
-                          disabled={activeUserAction === item.id}
-                        >
-                          {activeUserAction === item.id ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Atualizando...
-                            </>
-                          ) : item.has_paid ? (
-                            "Marcar como pendente"
-                          ) : (
-                            "Liberar acesso premium"
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleUpdateUserEmail(item.id, item.email)}
-                          disabled={activeUserAction === item.id}
-                        >
-                          Atualizar e-mail
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-primary hover:text-primary"
-                          onClick={() => handleResetUserPassword(item.id)}
-                          disabled={activeUserAction === item.id}
-                        >
-                          Redefinir senha
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p>Nenhum usuario registado encontrado.</p>
-                )}
-            </CardContent>
-          </Card>
-
-          <Card className="border border-border/60 bg-card/80">
-            <CardHeader>
-              <CardTitle>Pagamentos recentes</CardTitle>
-              <CardDescription>Conferencia rapida dos pagamentos processados.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-                {formattedPayments.length ? (
-                  formattedPayments.map((payment) => (
-                    <div key={payment.id} className="rounded-lg border border-border/40 bg-background/40 p-3 leading-relaxed">
-                      <p className="font-semibold text-foreground">{payment.email}</p>
-                      <p>{payment.amount}</p>
-                      <p className="text-xs uppercase tracking-widest">
-                        {payment.timestamp ? new Date(payment.timestamp).toLocaleString("pt-BR") : "Sem data"}
-                      </p>
-                      {payment.session_id && (
-                        <p className="text-[11px] text-muted-foreground">Sessao: {payment.session_id}</p>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p>Nenhum pagamento encontrado.</p>
-                )}
-            </CardContent>
-          </Card>
-        </div>
       </main>
     </div>
   );
