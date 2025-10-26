@@ -45,10 +45,11 @@ const normaliseItems = <T>(payload: { items?: T[] } | T[] | undefined | null): T
 
 async function apiFetch<TResponse = unknown>(path: string, options: RequestOptions = {}) {
   const { skipJson, headers, ...rest } = options;
+  const isFormData = typeof FormData !== "undefined" && rest.body instanceof FormData;
 
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...headers,
     },
     ...rest,
@@ -119,6 +120,7 @@ export type Recipe = {
   content: string;
   category: string | null;
   is_public: boolean;
+  image_url?: string | null;
 };
 
 type RecipeListResponse = {
@@ -146,6 +148,7 @@ export type AdminRecipePayload = {
   content: string;
   category: string;
   is_public: boolean;
+  image_url?: string | null;
 };
 
 export async function getAdminRecipes(authHeader: string, params?: { category?: string; is_public?: string }) {
@@ -196,6 +199,7 @@ export async function getAdminStats(authHeader: string) {
 }
 
 type AdminUser = {
+  id: number;
   email: string;
   has_paid: boolean;
 };
@@ -207,12 +211,29 @@ export async function getAdminUsers(authHeader: string) {
   return { items: normaliseItems(payload) };
 }
 
+type AdminUserUpdatePayload = {
+  email?: string;
+  new_password?: string;
+  has_paid?: boolean;
+};
+
+export async function updateAdminUser(authHeader: string, id: number, payload: AdminUserUpdatePayload) {
+  return apiFetch<AdminUser>(`/admin/users/${id}`, {
+    method: "PUT",
+    headers: { Authorization: authHeader },
+    body: JSON.stringify(payload),
+  });
+}
+
 type AdminPayment = {
-  id: string;
+  id: string | number;
   email: string;
-  amount_cents: number;
-  currency: string;
-  created_at: string;
+  amount_cents?: number;
+  amount_total?: number;
+  currency?: string;
+  created_at?: string;
+  paid_at?: string;
+  session_id?: string;
 };
 
 export async function getAdminPayments(authHeader: string) {
@@ -220,4 +241,14 @@ export async function getAdminPayments(authHeader: string) {
     headers: { Authorization: authHeader },
   });
   return { items: normaliseItems(payload) };
+}
+
+export async function uploadAdminImage(authHeader: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiFetch<{ url: string }>("/admin/upload-image", {
+    method: "POST",
+    headers: { Authorization: authHeader },
+    body: formData,
+  });
 }

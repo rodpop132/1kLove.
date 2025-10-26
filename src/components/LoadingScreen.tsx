@@ -59,13 +59,6 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
         <p className="text-xs text-muted-foreground sm:text-sm">
           Esse aquecimento rapido garante uma experiencia inicial suave em qualquer dispositivo.
         </p>
-
-        <a
-          href="/admin"
-          className="text-xs font-semibold text-primary underline-offset-2 hover:underline sm:text-sm"
-        >
-          Acesso administrativo
-        </a>
       </div>
     </div>
   );

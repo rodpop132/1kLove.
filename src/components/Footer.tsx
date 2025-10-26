@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useStripeCheckout } from "@/hooks/use-stripe-checkout";
+import { useAuth } from "@/context/AuthContext";
 import { Facebook, Heart, Instagram, Mail, ShieldCheck } from "lucide-react";
 
 const quickLinks = [
@@ -21,6 +22,8 @@ const socialLinks = [
 
 const Footer = () => {
   const { redirectToCheckout, isRedirecting, error } = useStripeCheckout();
+  const { admin } = useAuth();
+  const linksToRender = admin ? quickLinks : quickLinks.filter((link) => link.label !== "Admin");
 
   return (
     <footer className="relative overflow-hidden border-t border-border bg-gradient-to-b from-background via-background/60 to-card">
@@ -69,7 +72,7 @@ const Footer = () => {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">Mapa rapido</h3>
               <div className="mt-4 flex flex-col gap-3">
-                {quickLinks.map(({ label, href }) => (
+                {linksToRender.map(({ label, href }) => (
                   <a
                     key={label}
                     href={href}

@@ -18,6 +18,8 @@ import {
   getAdminUsers,
   Recipe,
   updateAdminRecipe,
+  updateAdminUser,
+  uploadAdminImage,
 } from "@/lib/api";
 import { Loader2, Lock, Unlock } from "lucide-react";
 
@@ -33,6 +35,7 @@ const defaultForm: AdminRecipePayload = {
   content: "",
   category: "",
   is_public: false,
+  image_url: "",
 };
 
 const Admin = () => {
@@ -45,6 +48,9 @@ const Admin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recipeForm, setRecipeForm] = useState(defaultForm);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const [activeUserAction, setActiveUserAction] = useState<number | null>(null);
 
   const loadAdminData = useCallback(
     async (authHeader: string) => {
@@ -124,8 +130,12 @@ const Admin = () => {
     setDashboardError(null);
 
     try {
-      await createAdminRecipe(admin.header, recipeForm);
+      await createAdminRecipe(admin.header, {
+        ...recipeForm,
+        image_url: recipeForm.image_url ? recipeForm.image_url : undefined,
+      });
       setRecipeForm(defaultForm);
+      setImageUploadError(null);
       toast({
         title: "Receita publicada",
         description: "A experiencia foi adicionada com sucesso para os assinantes.",
@@ -145,6 +155,32 @@ const Admin = () => {
     }
   };
 
+  const handleRecipeImageUpload = async (file: File | null) => {
+    if (!admin || !file) return;
+    setIsUploadingImage(true);
+    setImageUploadError(null);
+
+    try {
+      const response = await uploadAdminImage(admin.header, file);
+      setRecipeForm((prev) => ({ ...prev, image_url: response.url }));
+      toast({
+        title: "Imagem carregada",
+        description: "URL adicionada automaticamente ao formulario.",
+      });
+    } catch (error) {
+      console.error("Falha ao enviar imagem:", error);
+      const message = error instanceof Error ? error.message : "Nao foi possivel carregar a imagem.";
+      setImageUploadError(message);
+      toast({
+        title: "Erro ao carregar imagem",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleToggleRecipe = async (recipe: Recipe) => {
     if (!admin) return;
     setIsLoading(true);
@@ -155,6 +191,7 @@ const Admin = () => {
         content: recipe.content,
         category: recipe.category ?? "geral",
         is_public: !recipe.is_public,
+        image_url: recipe.image_url ?? undefined,
       });
       toast({
         title: "Visibilidade atualizada",
@@ -203,17 +240,106 @@ const Admin = () => {
     }
   };
 
+  const handleToggleUserPaid = async (userId: number, hasPaid: boolean) => {
+    if (!admin) return;
+    setActiveUserAction(userId);
+    setDashboardError(null);
+
+    try {
+      await updateAdminUser(admin.header, userId, { has_paid: !hasPaid });
+      toast({
+        title: !hasPaid ? "Acesso liberado" : "Acesso premium removido",
+        description: !hasPaid
+          ? "O utilizador agora esta marcado como pagante."
+          : "O utilizador foi marcado como pendente.",
+      });
+      await loadAdminData(admin.header);
+    } catch (error) {
+      console.error("Falha ao atualizar utilizador:", error);
+      const message = error instanceof Error ? error.message : "Nao foi possivel atualizar os dados do usuario.";
+      setDashboardError(message);
+      toast({
+        title: "Erro ao atualizar utilizador",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setActiveUserAction(null);
+    }
+  };
+
+  const handleUpdateUserEmail = async (userId: number, currentEmail: string) => {
+    if (!admin) return;
+    const newEmail = window.prompt("Novo e-mail para o utilizador:", currentEmail);
+    if (!newEmail || newEmail === currentEmail) return;
+
+    setActiveUserAction(userId);
+    setDashboardError(null);
+    try {
+      await updateAdminUser(admin.header, userId, { email: newEmail });
+      toast({
+        title: "E-mail atualizado",
+        description: `O utilizador agora utiliza ${newEmail}.`,
+      });
+      await loadAdminData(admin.header);
+    } catch (error) {
+      console.error("Falha ao atualizar e-mail:", error);
+      const message = error instanceof Error ? error.message : "Nao foi possivel atualizar o e-mail.";
+      setDashboardError(message);
+      toast({
+        title: "Erro ao atualizar e-mail",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setActiveUserAction(null);
+    }
+  };
+
+  const handleResetUserPassword = async (userId: number) => {
+    if (!admin) return;
+    const newPassword = window.prompt("Informe a nova senha temporaria para este utilizador:");
+    if (!newPassword) return;
+
+    setActiveUserAction(userId);
+    setDashboardError(null);
+    try {
+      await updateAdminUser(admin.header, userId, { new_password: newPassword });
+      toast({
+        title: "Senha atualizada",
+        description: "A nova senha foi aplicada com sucesso.",
+      });
+    } catch (error) {
+      console.error("Falha ao redefinir senha:", error);
+      const message = error instanceof Error ? error.message : "Nao foi possivel redefinir a senha.";
+      setDashboardError(message);
+      toast({
+        title: "Erro ao redefinir senha",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setActiveUserAction(null);
+    }
+  };
+
   const formattedPayments = useMemo(() => {
     if (!adminData) return [];
     return adminData.payments.map((payment) => {
-      const cents = Number.isFinite(payment.amount_cents) ? payment.amount_cents : 0;
+      const cents = Number.isFinite(payment.amount_cents)
+        ? payment.amount_cents
+        : Number.isFinite(payment.amount_total)
+          ? payment.amount_total
+          : 0;
       const currencyCode = payment.currency ? payment.currency.toUpperCase() : "BRL";
+      const timestamp = payment.paid_at ?? payment.created_at ?? null;
       return {
         ...payment,
         amount: (cents / 100).toLocaleString("pt-BR", {
           style: "currency",
           currency: currencyCode,
         }),
+        timestamp,
       };
     });
   }, [adminData]);
@@ -357,6 +483,41 @@ const Admin = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="recipe-image-url">Imagem (opcional)</Label>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Input
+                      id="recipe-image-url"
+                      type="url"
+                      placeholder="https://cdn.seusite.com/imagem.jpg"
+                      value={recipeForm.image_url ?? ""}
+                      onChange={(event) => setRecipeForm((prev) => ({ ...prev, image_url: event.target.value }))}
+                    />
+                    <Input
+                      id="recipe-image-file"
+                      type="file"
+                      accept="image/*"
+                      disabled={isUploadingImage}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0] ?? null;
+                        void handleRecipeImageUpload(file);
+                        event.target.value = "";
+                      }}
+                    />
+                  </div>
+                  {isUploadingImage && <p className="text-xs text-muted-foreground">Carregando imagem...</p>}
+                  {imageUploadError && <p className="text-xs text-destructive">{imageUploadError}</p>}
+                  {recipeForm.image_url && (
+                    <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/40 p-3 text-xs text-muted-foreground">
+                      <img
+                        src={recipeForm.image_url}
+                        alt="Preview da receita"
+                        className="h-16 w-16 rounded object-cover"
+                      />
+                      <span className="break-all">{recipeForm.image_url}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="recipe-content">Conteudo</Label>
                   <Textarea
                     id="recipe-content"
@@ -442,15 +603,22 @@ const Admin = () => {
             {isLoading && !adminData ? (
               <p className="text-sm text-muted-foreground">Carregando receitas...</p>
             ) : adminData && adminData.recipes.length > 0 ? (
-              adminData.recipes.map((recipe) => (
-                <article
-                  key={recipe.id}
-                  className="flex flex-col gap-3 rounded-lg border border-border/50 bg-background/40 p-4 transition hover:border-primary/50 hover:bg-primary/5 md:flex-row md:items-center md:justify-between"
-                >
-                  <div className="space-y-1">
-                    <p className="text-lg font-semibold text-foreground">{recipe.title}</p>
-                    <p className="text-sm text-muted-foreground">{recipe.content}</p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+                adminData.recipes.map((recipe) => (
+                  <article
+                    key={recipe.id}
+                    className="flex flex-col gap-3 rounded-lg border border-border/50 bg-background/40 p-4 transition hover:border-primary/50 hover:bg-primary/5 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div className="space-y-1">
+                      {recipe.image_url && (
+                        <img
+                          src={recipe.image_url}
+                          alt={`Imagem da receita ${recipe.title}`}
+                          className="h-24 w-full rounded object-cover md:h-20 md:w-32"
+                        />
+                      )}
+                      <p className="text-lg font-semibold text-foreground">{recipe.title}</p>
+                      <p className="text-sm text-muted-foreground">{recipe.content}</p>
+                      <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
                       <span>{recipe.category ?? "sem categoria"}</span>
                       <span>-</span>
                       <span>{recipe.is_public ? "publica" : "premium"}</span>
@@ -494,22 +662,62 @@ const Admin = () => {
               <CardTitle>Usuarios registados</CardTitle>
               <CardDescription>Status de pagamento e acesso.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              {adminData?.users.length ? (
-                adminData.users.map((item) => (
-                  <div
-                    key={item.email}
-                    className="flex items-center justify-between rounded-lg border border-border/40 bg-background/40 p-3"
-                  >
-                    <span>{item.email}</span>
-                    <Badge variant={item.has_paid ? "secondary" : "outline"}>
-                      {item.has_paid ? "Pago" : "Pendente"}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <p>Nenhum usuario registado encontrado.</p>
-              )}
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                {adminData?.users.length ? (
+                  adminData.users.map((item) => (
+                    <div
+                      key={item.id}
+                      className="space-y-3 rounded-lg border border-border/40 bg-background/40 p-4"
+                    >
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-1">
+                          <span className="font-semibold text-foreground">{item.email}</span>
+                          <p className="text-xs uppercase tracking-widest text-muted-foreground">ID {item.id}</p>
+                        </div>
+                        <Badge variant={item.has_paid ? "secondary" : "outline"}>
+                          {item.has_paid ? "Pago" : "Pendente"}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant={item.has_paid ? "outline" : "secondary"}
+                          size="sm"
+                          onClick={() => handleToggleUserPaid(item.id, item.has_paid)}
+                          disabled={activeUserAction === item.id}
+                        >
+                          {activeUserAction === item.id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Atualizando...
+                            </>
+                          ) : item.has_paid ? (
+                            "Marcar como pendente"
+                          ) : (
+                            "Liberar acesso premium"
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUpdateUserEmail(item.id, item.email)}
+                          disabled={activeUserAction === item.id}
+                        >
+                          Atualizar e-mail
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary hover:text-primary"
+                          onClick={() => handleResetUserPassword(item.id)}
+                          disabled={activeUserAction === item.id}
+                        >
+                          Redefinir senha
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p>Nenhum usuario registado encontrado.</p>
+                )}
             </CardContent>
           </Card>
 
@@ -519,19 +727,22 @@ const Admin = () => {
               <CardDescription>Conferencia rapida dos pagamentos processados.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              {formattedPayments.length ? (
-                formattedPayments.map((payment) => (
-                  <div key={payment.id} className="rounded-lg border border-border/40 bg-background/40 p-3 leading-relaxed">
-                    <p className="font-semibold text-foreground">{payment.email}</p>
-                    <p>{payment.amount}</p>
-                    <p className="text-xs uppercase tracking-widest">
-                      {new Date(payment.created_at).toLocaleString("pt-BR")}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p>Nenhum pagamento encontrado.</p>
-              )}
+                {formattedPayments.length ? (
+                  formattedPayments.map((payment) => (
+                    <div key={payment.id} className="rounded-lg border border-border/40 bg-background/40 p-3 leading-relaxed">
+                      <p className="font-semibold text-foreground">{payment.email}</p>
+                      <p>{payment.amount}</p>
+                      <p className="text-xs uppercase tracking-widest">
+                        {payment.timestamp ? new Date(payment.timestamp).toLocaleString("pt-BR") : "Sem data"}
+                      </p>
+                      {payment.session_id && (
+                        <p className="text-[11px] text-muted-foreground">Sessao: {payment.session_id}</p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p>Nenhum pagamento encontrado.</p>
+                )}
             </CardContent>
           </Card>
         </div>
