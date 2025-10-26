@@ -74,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
     try {
+      setAdmin(null);
       const response = await loginAccount(email, password);
       setUser({ email, password, hasPaid: response.has_paid });
       return { success: true, hasPaid: response.has_paid, message: response.message };
@@ -86,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             : "Falha ao realizar login.";
       return { success: false, hasPaid: false, error: message };
     }
-  }, []);
+  }, [setAdmin]);
 
   const register = useCallback(async (email: string, password: string): Promise<RegisterResult> => {
     try {
@@ -193,4 +194,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
