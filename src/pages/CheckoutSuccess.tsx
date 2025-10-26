@@ -1,10 +1,35 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const CheckoutSuccess = () => {
+  const { user, refreshUser } = useAuth();
+  const [status, setStatus] = useState<"idle" | "refreshing" | "done" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    setStatus("refreshing");
+    refreshUser()
+      ?.then((result) => {
+        if (result?.success) {
+          setStatus("done");
+        } else {
+          setStatus("error");
+          setError(result?.error ?? "Nao foi possivel atualizar seu acesso agora.");
+        }
+      })
+      .catch((err) => {
+        setStatus("error");
+        setError(err instanceof Error ? err.message : "Nao foi possivel atualizar seu acesso agora.");
+      });
+  }, [refreshUser, user]);
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -27,6 +52,19 @@ const CheckoutSuccess = () => {
                 - Voce ja pode acessar o dashboard e explorar as primeiras experiencias para colocar em pratica hoje
                 mesmo.
               </p>
+              {user && (
+                <p className="mt-3 text-xs text-muted-foreground sm:text-sm">
+                  Estado da conta:{" "}
+                  {status === "refreshing"
+                    ? "confirmando pagamento..."
+                    : status === "done"
+                      ? "acesso liberado!"
+                      : status === "error"
+                        ? "nao foi possivel confirmar automaticamente."
+                        : "aguardando confirmacao..."}
+                </p>
+              )}
+              {error && <p className="mt-2 text-xs text-destructive sm:text-sm">{error}</p>}
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Button asChild variant="hero" size="lg">

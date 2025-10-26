@@ -1,19 +1,25 @@
 const FALLBACK_BASE_URL = "http://104.234.236.68:30067";
 
-const resolveDefaultBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
-      return "/api";
-    }
+const resolveBrowserBaseUrl = () => {
+  if (typeof window === "undefined") {
+    return FALLBACK_BASE_URL;
   }
+
+  const hostname = window.location.hostname;
+  if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
+    return "/api";
+  }
+
   return FALLBACK_BASE_URL;
 };
 
-const DEFAULT_BASE_URL = resolveDefaultBaseUrl();
-
-export const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? DEFAULT_BASE_URL;
+const getApiBaseUrl = () => {
+  const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  if (envBase && envBase.trim().length > 0) {
+    return envBase;
+  }
+  return resolveBrowserBaseUrl();
+};
 
 export class ApiError extends Error {
   status: number;
@@ -33,7 +39,7 @@ type RequestOptions = RequestInit & {
 async function apiFetch<TResponse = unknown>(path: string, options: RequestOptions = {}) {
   const { skipJson, headers, ...rest } = options;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...headers,
@@ -61,7 +67,7 @@ export async function healthCheck() {
 }
 
 export async function registerAccount(email: string, password: string) {
-  const response = await fetch(`${API_BASE_URL}/register`, {
+  const response = await fetch(`${getApiBaseUrl()}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
