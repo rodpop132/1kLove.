@@ -5,27 +5,94 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { listMyRecipes, Recipe } from "@/lib/api";
 import { useStripeCheckout } from "@/hooks/use-stripe-checkout";
 import { useAnnouncements } from "@/hooks/use-announcements";
-import { useToast } from "@/components/ui/use-toast";
 import { BookOpen, Sparkles, Users } from "lucide-react";
 
 type CategorisedRecipes = Record<string, Recipe[]>;
+
+type DashboardSection = {
+  id: "overview" | "community" | "recipes";
+  label: string;
+  description: string;
+  icon: typeof Sparkles;
+};
+
+const dashboardSections: DashboardSection[] = [
+  {
+    id: "overview",
+    label: "Novidades",
+    description: "Resumo rapido das novidades e planos da semana.",
+    icon: Sparkles,
+  },
+  {
+    id: "community",
+    label: "Comunidade",
+    description: "Espaco para acompanhar atividades em grupo.",
+    icon: Users,
+  },
+  {
+    id: "recipes",
+    label: "Receitas",
+    description: "Acesse os guias premium e colecoes.",
+    icon: BookOpen,
+  },
+];
+
+const overviewHighlights = [
+  {
+    title: "Novidade da semana",
+    description:
+      "Novo desafio de 7 dias focado em reconhecimento mutuo. Ideal para reaproximar depois de um dia corrido.",
+    bullets: [
+      "3 atividades surpresa",
+      "Checklist rapido para praticar juntos",
+      "Frases inspiradoras diarias",
+    ],
+  },
+  {
+    title: "Plano rapido para hoje",
+    description: "Selecione um mini ritual de 15 minutos para quebrar a rotina esta noite.",
+    bullets: [
+      "Escolha o mood: leve, divertido ou profundo",
+      "Checklist de preparacao em 3 passos",
+    ],
+  },
+];
+
+const recipeCompanions = [
+  {
+    title: "Diario do casal",
+    description:
+      "Registre emocoes, momentos especiais e combinados importantes. Em breve com sincronizacao entre parceiros.",
+  },
+  {
+    title: "Conta compartilhada",
+    description:
+      "Convide seu parceiro(a) para acompanhar avancos, metas e desbloquear recompensas conjuntas.",
+  },
+  {
+    title: "Favoritos e listas",
+    description: "Crie colecoes personalizadas com os rituais que mais funcionaram para voces.",
+  },
+];
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const { redirectToCheckout, isRedirecting, error: checkoutError } = useStripeCheckout();
   const { toast } = useToast();
+  const { announcements } = useAnnouncements();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
   const [lastVerification, setLastVerification] = useState<Date | null>(null);
-  const [activeSection, setActiveSection] = useState<"overview" | "community" | "recipes">("overview");
+  const [activeSection, setActiveSection] = useState<DashboardSection["id"]>("overview");
 
   useEffect(() => {
     if (!user) {
@@ -143,65 +210,11 @@ const Dashboard = () => {
 
   const categories = useMemo(() => Object.keys(recipesByCategory), [recipesByCategory]);
   const firstCategory = categories[0] ?? "geral";
+  const announcementItems = useMemo(() => announcements.slice(0, 6), [announcements]);
 
   if (!user) return null;
 
   const showPaymentOverlay = !user.hasPaid;
-  const dashboardSections: Array<{
-    id: "overview" | "community" | "recipes";
-    label: string;
-    description: string;
-    icon: typeof Sparkles;
-  }> = [
-    {
-      id: "overview",
-      label: "Novidades",
-      description: "Resumo rapido das novidades e planos da semana.",
-      icon: Sparkles,
-    },
-    {
-      id: "community",
-      label: "Comunidade",
-      description: "Espaco para acompanhar atividades em grupo.",
-      icon: Users,
-    },
-    {
-      id: "recipes",
-      label: "Receitas",
-      description: "Acesse os guias premium e colecoes.",
-      icon: BookOpen,
-    },
-  ];
-
-  const announcementItems = useMemo(() => announcements.slice(0, 6), [announcements]);
-  const overviewHighlights = [
-    {
-      title: "Novidade da semana",
-      description:
-        "Novo desafio \"7 dias de reencontro\" desbloqueia tarefas curtas e conversas guiadas para reacender a proximidade.",
-      bullets: ["3 atividades surpresa", "Checklist rapido para praticar juntos", "Frases inspiradoras diarias"],
-    },
-    {
-      title: "Plano rapido para hoje",
-      description: "Selecione um mini ritual de 15 minutos para quebrar a rotina esta noite.",
-      bullets: ["Escolha o mood: leve, divertido ou profundo", "Checklist de preparacao em 3 passos"],
-    },
-  ];
-
-  const recipeCompanions = [
-    {
-      title: "Diario do casal",
-      description: "Registre emocoes, momentos especiais e combinados importantes. Em breve com sincronizacao entre parceiros.",
-    },
-    {
-      title: "Conta compartilhada",
-      description: "Convide seu parceiro(a) para acompanhar avancos, metas e desbloquear recompensas conjuntas.",
-    },
-    {
-      title: "Favoritos e listas",
-      description: "Crie colecoes personalizadas com os rituais que mais funcionaram para voces.",
-    },
-  ];
 
   const renderSectionContent = () => {
     switch (activeSection) {
@@ -292,7 +305,25 @@ const Dashboard = () => {
             </div>
           </div>
         );
-            case "recipes":
+      case "community":
+        return (
+          <Card className="border border-border/60 bg-card/80 animate-fade-up" style={{ animationDelay: "0.05s" }}>
+            <CardHeader className="space-y-3">
+              <Badge variant="outline" className="w-fit border-secondary/40 bg-secondary/10 text-secondary">
+                Em breve
+              </Badge>
+              <CardTitle>Espaco da comunidade</CardTitle>
+              <CardDescription>
+                Estamos preparando um hub para partilhas, eventos ao vivo e celebracao de conquistas do casal.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>Desafios colaborativos, badges e mural de progressos serao adicionados nas proximas atualizacoes.</p>
+              <p>Enquanto isso, acompanhe as novidades e envie feedback pelo e-mail de suporte.</p>
+            </CardContent>
+          </Card>
+        );
+      case "recipes":
       default:
         return (
           <div className="space-y-6">
@@ -389,4 +420,121 @@ const Dashboard = () => {
             </div>
           </div>
         );
+    }
+  };
 
+  return (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <main className="relative container mx-auto max-w-6xl space-y-12 px-4 py-16 sm:px-6 sm:py-20">
+        <section className="space-y-4">
+          <Badge variant="secondary" className="w-fit bg-secondary/10 text-secondary-foreground">
+            Em desenvolvimento
+          </Badge>
+          <h1 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-5xl">
+            Ola, {user.email.split("@")[0]}! Bem-vindo ao seu painel
+          </h1>
+          <p className="max-w-2xl text-muted-foreground">
+            Consulte receitas, registre memorias e acompanhe os proximos passos do relacionamento.{" "}
+            {user.hasPaid ? "Tudo liberado para explorar!" : "Complete o pagamento para desbloquear o conteudo premium."}
+          </p>
+        </section>
+
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,240px)_1fr]">
+          <aside className="lg:sticky lg:top-28">
+            <div className="flex gap-3 overflow-x-auto rounded-2xl border border-border/60 bg-card/80 p-3 lg:flex-col lg:overflow-visible">
+              {dashboardSections.map(({ id, label, icon: Icon, description }) => {
+                const isActive = activeSection === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setActiveSection(id)}
+                    className={`flex flex-col rounded-xl border px-4 py-3 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:flex-row lg:items-center lg:gap-3 ${
+                      isActive
+                        ? "border-primary/60 bg-primary/10 text-primary"
+                        : "border-border/50 bg-background/40 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="font-semibold">{label}</span>
+                    </div>
+                    <span className="mt-2 text-xs text-muted-foreground lg:mt-0 lg:text-[11px] lg:font-normal">
+                      {description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+
+          <section className="space-y-8">{renderSectionContent()}</section>
+        </div>
+
+        <div className="flex flex-col gap-4 rounded-lg border border-border/60 bg-muted/20 p-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1 text-center sm:text-left">
+            <p className="text-sm font-semibold text-foreground">Sugira experiencias que fazem sentido para voces</p>
+            <p>
+              Envie novas ideias, receitas ou rituais que gostariam de ver no guia. Cada contribuicao ajuda a comunidade a crescer.
+            </p>
+          </div>
+          <Button variant="outline" asChild className="w-full sm:w-auto">
+            <a href="mailto:contato@receitasdeamor.com">Enviar sugestao por e-mail</a>
+          </Button>
+        </div>
+
+        {showPaymentOverlay && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 px-4 text-center backdrop-blur">
+            <div className="max-w-lg space-y-5 rounded-2xl border border-primary/30 bg-card/90 p-8 shadow-xl">
+              <Badge variant="outline" className="border-primary/50 bg-primary/10 text-primary">
+                Conteudo premium bloqueado
+              </Badge>
+              <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+                Finalize o pagamento para desbloquear tudo
+              </h2>
+              <p className="text-sm text-muted-foreground sm:text-base">
+                Assim que a Stripe confirmar sua compra as receitas premium aparecem automaticamente neste painel. Abra o checkout novamente ou verifique o status caso ja tenha pago.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                <Button
+                  variant="hero"
+                  size="lg"
+                  onClick={redirectToCheckout}
+                  disabled={isRedirecting}
+                  className="w-full sm:w-auto"
+                >
+                  {isRedirecting ? "Abrindo checkout..." : "Ir para checkout seguro"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleVerifyPayment}
+                  disabled={isRefreshingStatus}
+                  className="w-full sm:w-auto"
+                >
+                  {isRefreshingStatus ? "Verificando..." : "Ja paguei, atualizar"}
+                </Button>
+              </div>
+              {checkoutError && <p className="text-sm text-destructive">{checkoutError}</p>}
+              {lastVerification && (
+                <p className="text-xs text-muted-foreground">
+                  Ultima verificacao manual: {lastVerification.toLocaleTimeString("pt-BR")}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Precisa de ajuda? Escreva para {" "}
+                <a href="mailto:contato@receitasdeamor.com" className="font-semibold text-primary hover:underline">
+                  contato@receitasdeamor.com
+                </a>
+                .
+              </p>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;
