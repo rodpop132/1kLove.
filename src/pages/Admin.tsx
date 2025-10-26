@@ -223,9 +223,14 @@ const Admin = () => {
     const totalCents = Number.isFinite(adminData.stats.payments.total_amount_cents)
       ? adminData.stats.payments.total_amount_cents
       : 0;
-    const currencyCode = adminData.stats.payments.currency
-      ? adminData.stats.payments.currency.toUpperCase()
-      : "BRL";
+    const currencyCode =
+      adminData.stats.payments.currency && adminData.stats.payments.currency.length > 0
+        ? adminData.stats.payments.currency.toUpperCase()
+        : "BRL";
+    const totalFormatted = (totalCents / 100).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: currencyCode,
+    });
 
     return {
       users: adminData.stats.users,
@@ -233,10 +238,7 @@ const Admin = () => {
       payments: {
         ...adminData.stats.payments,
         currencyCode,
-        totalFormatted: (totalCents / 100).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: currencyCode,
-        }),
+        totalFormatted,
       },
     };
   }, [adminData]);
