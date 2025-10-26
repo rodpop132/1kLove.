@@ -5,7 +5,7 @@ import { listPublicRecipes, Recipe } from "@/lib/api";
 const staticFeatures = [
   {
     icon: Book,
-    text: "Webook digital com mais de 1.000 experiencias",
+    text: "Ebook digital com mais de 1.000 experiencias",
   },
   {
     icon: Calendar,

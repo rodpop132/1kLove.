@@ -16,7 +16,7 @@ const CheckoutFailure = () => {
             </span>
             <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Pagamento nao concluido</CardTitle>
             <CardDescription className="text-base text-muted-foreground sm:text-lg">
-              Parece que houve um problema ao finalizar a cobranca. Sem o pagamento, o acesso ao webook ainda nao foi
+              Parece que houve um problema ao finalizar a cobranca. Sem o pagamento, o acesso ao ebook ainda nao foi
               liberado.
             </CardDescription>
           </CardHeader>

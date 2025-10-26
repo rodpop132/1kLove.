@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
-import heroImage from "@/assets/webook-hero.png";
+import heroImage from "@/assets/ebook-hero.png";
 
 const HeroSection = () => {
   const scrollToOffer = () => {
@@ -71,7 +71,7 @@ const HeroSection = () => {
             <div className="flex flex-col gap-4 pt-4 sm:flex-row">
               <Button variant="hero" size="xl" onClick={scrollToOffer} className="group">
                 <Heart className="transition-transform group-hover:scale-110" size={20} fill="currentColor" />
-                Quero meu webook por R$ 49,99
+                Quero meu ebook por R$ 49,99
               </Button>
             </div>
 
@@ -101,7 +101,7 @@ const HeroSection = () => {
             <div className="relative animate-float">
               <img
                 src={heroImage}
-                alt="Webook 1000 Receitas de Amor"
+                alt="Ebook 1000 Receitas de Amor"
                 className="mx-auto w-full max-w-md drop-shadow-2xl"
               />
               <div className="absolute inset-0 -z-10 bg-gradient-to-t from-primary/20 to-transparent blur-3xl" />
@@ -114,4 +114,3 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
-

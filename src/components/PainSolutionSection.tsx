@@ -35,7 +35,7 @@ const PainSolutionSection = () => {
 
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             A maioria dos casais chega ate aqui depois de meses sem tempo, com conversas cada vez mais rapidas e
-            dificuldades para manter a chama acesa. O webook mostra um passo a passo pratico para reconectar sem precisar
+            dificuldades para manter a chama acesa. O ebook mostra um passo a passo pratico para reconectar sem precisar
             de horas de terapia.
           </p>
         </div>

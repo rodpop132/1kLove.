@@ -2,7 +2,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const faqs = [
   {
-    question: "Como recebo o webook?",
+    question: "Como recebo o ebook?",
     answer:
       "Voce recebe o acesso por e-mail imediatamente apos a confirmacao do pagamento via Stripe. O conteudo fica disponivel para sempre e pode ser acessado em qualquer dispositivo.",
   },
@@ -24,7 +24,7 @@ const faqs = [
   {
     question: "E se nao funcionar para nos?",
     answer:
-      "Oferecemos garantia total de sete dias. Se voce nao sentir que o webook esta ajudando, basta solicitar o reembolso completo, sem perguntas ou complicacoes.",
+      "Oferecemos garantia total de sete dias. Se voce nao sentir que o ebook esta ajudando, basta solicitar o reembolso completo, sem perguntas ou complicacoes.",
   },
 ];
 

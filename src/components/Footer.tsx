@@ -46,7 +46,7 @@ const Footer = () => {
             </div>
 
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Um webook pratico para transformar relacionamentos com rituais diarios, conversas profundas e desafios que
+              Um ebook pratico para transformar relacionamentos com rituais diarios, conversas profundas e desafios que
               podem ser feitos mesmo em dias corridos.
             </p>
 

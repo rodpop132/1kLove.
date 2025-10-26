@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { useAnnouncements } from "@/hooks/use-announcements";
 import {
   AdminRecipePayload,
   createAdminRecipe,
@@ -31,6 +32,7 @@ import {
   Trash2,
   Unlock,
   Users as UsersIcon,
+  Sparkles,
 } from "lucide-react";
 
 type AdminData = {
@@ -61,7 +63,9 @@ const Admin = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [activeUserAction, setActiveUserAction] = useState<number | null>(null);
-  const [activePanel, setActivePanel] = useState<"create" | "recipes" | "users" | "payments" | "stats">("create");
+  const [activePanel, setActivePanel] = useState<"create" | "news" | "recipes" | "users" | "payments" | "stats">("create");
+  const { announcements, addAnnouncement, deleteAnnouncement } = useAnnouncements();
+  const [newsForm, setNewsForm] = useState({ title: "", content: "" });
 
   const loadAdminData = useCallback(
     async (authHeader: string) => {
@@ -251,6 +255,36 @@ const Admin = () => {
     }
   };
 
+  const handleCreateAnnouncement = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setDashboardError(null);
+    try {
+      addAnnouncement(newsForm.title, newsForm.content);
+      setNewsForm({ title: "", content: "" });
+      toast({
+        title: "Atualizacao publicada",
+        description: "Os assinantes vao visualizar a novidade imediatamente no painel.",
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Nao foi possivel publicar a novidade.";
+      setDashboardError(message);
+      toast({
+        title: "Erro ao publicar novidade",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAnnouncement = (id: string) => {
+    const confirmDelete = window.confirm("Tem certeza que deseja remover esta novidade?");
+    if (!confirmDelete) return;
+    deleteAnnouncement(id);
+    toast({
+      title: "Novidade removida",
+      description: "Os assinantes nao veem mais esta atualizacao.",
+    });
+  };
   const handleToggleUserPaid = async (userId: number, hasPaid: boolean) => {
     if (!admin) return;
     setActiveUserAction(userId);
@@ -572,6 +606,87 @@ const Admin = () => {
             </Card>
           </div>
         );
+      case "news":
+        return (
+          <div className="space-y-6">
+            <Card className="border border-border/60 bg-card/80">
+              <CardHeader>
+                <CardTitle>Publicar novidade</CardTitle>
+                <CardDescription>Informe atualizacoes rapidas que aparecem na dashboard dos usuarios.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCreateAnnouncement} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="news-title">Titulo</Label>
+                    <Input
+                      id="news-title"
+                      placeholder="Ex.: Novo mini ritual disponivel"
+                      value={newsForm.title}
+                      onChange={(event) => setNewsForm((prev) => ({ ...prev, title: event.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="news-content">Descricao</Label>
+                    <Textarea
+                      id="news-content"
+                      rows={4}
+                      placeholder="Explique rapidamente o que mudou ou qual e a dica do dia."
+                      value={newsForm.content}
+                      onChange={(event) => setNewsForm((prev) => ({ ...prev, content: event.target.value }))}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Publicar novidade
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border/60 bg-card/80">
+              <CardHeader>
+                <CardTitle>Novidades recentes</CardTitle>
+                <CardDescription>Edite o calendario de comunicados para manter os casais informados.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {announcements.length ? (
+                  announcements.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-lg border border-border/40 bg-background/40 p-4 transition hover:border-primary/60 hover:bg-primary/5"
+                    >
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(item.createdAt).toLocaleString("pt-BR", {
+                              day: "2-digit",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                          <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteAnnouncement(item.id)}
+                        >
+                          Remover
+                        </Button>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground">{item.content}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Sem novidades cadastradas por enquanto.</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
       case "recipes":
         if (!adminData) return renderDataFallback("Carregue as receitas para gerir visibilidade e conteudos.");
         return (
@@ -832,7 +947,7 @@ const Admin = () => {
                 </Button>
               </form>
               <p className="mt-6 text-center text-xs text-muted-foreground">
-                Dica: mantenha esta URL apenas com quem faz a curadoria das receitas do webook.
+                Dica: mantenha esta URL apenas com quem faz a curadoria das receitas do ebook.
               </p>
             </CardContent>
           </Card>

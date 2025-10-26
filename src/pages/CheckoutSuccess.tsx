@@ -41,7 +41,7 @@ const CheckoutSuccess = () => {
             </span>
             <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Pagamento confirmado!</CardTitle>
             <CardDescription className="text-base text-muted-foreground sm:text-lg">
-              Seu acesso ao webook 1000 Receitas de Amor foi liberado. Em instantes voce recebe um e-mail com os detalhes
+              Seu acesso ao ebook 1000 Receitas de Amor foi liberado. Em instantes voce recebe um e-mail com os detalhes
               e instrucoes de acesso.
             </CardDescription>
           </CardHeader>

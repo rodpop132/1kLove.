@@ -19,7 +19,7 @@ const OfferSection = () => {
 
           <header className="space-y-4 text-center animate-fade-up" style={{ animationDelay: "0.05s" }}>
             <h2 className="text-3xl font-bold leading-tight text-foreground md:text-5xl">
-              Receba o webook e a dashboard completa hoje mesmo
+              Receba o ebook e a dashboard completa hoje mesmo
             </h2>
             <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
               Todo o conteudo chega ao seu e-mail assim que o pagamento for confirmado. Comece em menos de cinco
