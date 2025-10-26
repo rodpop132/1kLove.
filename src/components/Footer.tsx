@@ -11,6 +11,7 @@ const quickLinks = [
   { label: "Beneficios", href: "#hero" },
   { label: "Oferta", href: "#offer" },
   { label: "FAQ", href: "#faq" },
+  { label: "Admin", href: "/admin" },
 ];
 
 const socialLinks = [
