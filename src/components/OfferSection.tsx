@@ -18,7 +18,7 @@ const OfferSection = () => {
           </div>
 
           <header className="space-y-4 text-center animate-fade-up" style={{ animationDelay: "0.05s" }}>
-            <h2 className="text-3xl font-bold leading-tight text-foreground md:text-5xl">
+            <h2 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-5xl">
               Receba o ebook e a dashboard completa hoje mesmo
             </h2>
             <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
@@ -28,16 +28,19 @@ const OfferSection = () => {
           </header>
 
           <div className="mt-10 grid items-center gap-8 md:grid-cols-[1.2fr_1fr] md:gap-12">
-            <div className="space-y-6 text-center md:text-left animate-fade-up" style={{ animationDelay: "0.1s" }}>
-              <div>
-                <span className="text-xl text-muted-foreground line-through md:text-2xl">R$ 97,00</span>
+            <div
+              className="space-y-6 text-center md:text-left animate-fade-up"
+              style={{ animationDelay: "0.1s" }}
+            >
+              <div className="flex flex-col items-center gap-1 md:items-start">
+                <span className="text-lg text-muted-foreground line-through sm:text-xl md:text-2xl">R$ 97,00</span>
               </div>
-              <div className="flex items-baseline justify-center gap-3 md:justify-start">
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-5xl font-extrabold text-transparent md:text-6xl">
+              <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-end sm:justify-start">
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl md:text-6xl">
                   R$ 49
                 </span>
                 <div className="leading-none">
-                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-3xl font-bold text-transparent">
+                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                     ,99
                   </span>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">valor promocional</p>
@@ -49,8 +52,8 @@ const OfferSection = () => {
 
               <Button
                 variant="hero"
-                size="xl"
-                className="group w-full text-lg md:w-auto"
+                size="lg"
+                className="group w-full sm:w-auto"
                 onClick={redirectToCheckout}
                 disabled={isRedirecting}
               >
@@ -74,7 +77,7 @@ const OfferSection = () => {
             </div>
 
             <div
-              className="space-y-5 rounded-xl border border-border/60 bg-background/60 p-6 text-sm leading-relaxed text-muted-foreground md:text-base animate-fade-up"
+              className="space-y-5 rounded-xl border border-border/60 bg-background/80 p-6 text-left text-sm leading-relaxed text-muted-foreground md:text-base animate-fade-up"
               style={{ animationDelay: "0.18s" }}
             >
               <div className="flex items-center gap-3">
