@@ -1,6 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "http://104.234.236.68:30067/$1" }
+    { "source": "/api/(.*)", "destination": "http://104.234.236.68:30067/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
