@@ -1,4 +1,16 @@
-const DEFAULT_BASE_URL = "http://104.234.236.68:30067";
+const FALLBACK_BASE_URL = "http://104.234.236.68:30067";
+
+const resolveDefaultBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
+      return "/api";
+    }
+  }
+  return FALLBACK_BASE_URL;
+};
+
+const DEFAULT_BASE_URL = resolveDefaultBaseUrl();
 
 export const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? DEFAULT_BASE_URL;

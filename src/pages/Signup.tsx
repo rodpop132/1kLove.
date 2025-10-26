@@ -36,23 +36,23 @@ const Signup = () => {
 
     if (!result.success) {
       setIsLoading(false);
-      setError(result.error ?? "Não foi possível criar sua conta agora.");
+      setError(result.error ?? "Nao foi possivel criar a sua conta agora.");
       return;
     }
 
     if (result.status === 409) {
       setIsLoading(false);
-      setMessage("Conta já existente. Faça login para continuar.");
+      setMessage("Conta ja existente. Faca login para continuar.");
       return;
     }
 
     const loginResult = await login(form.email, form.password);
     setIsLoading(false);
 
-    if (loginResult.success) {
+    if (loginResult?.success) {
       navigate("/dashboard", { replace: true });
     } else {
-      setMessage("Conta criada com sucesso! Faça login para continuar.");
+      setMessage("Conta criada com sucesso! Faca login para continuar.");
       navigate("/login");
     }
   };
@@ -65,8 +65,8 @@ const Signup = () => {
           <CardHeader className="space-y-3 text-center">
             <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Crie seu acesso</CardTitle>
             <CardDescription className="text-base text-muted-foreground sm:text-lg">
-              Garanta seu lugar na comunidade 1000 Receitas de Amor. Em breve você terá acesso completo às experiências,
-              recomendações personalizadas e ao diário do casal.
+              Garanta seu lugar na comunidade 1000 Receitas de Amor. Em breve voce tera acesso completo as experiencias,
+              recomendacoes personalizadas e ao diario do casal.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -114,12 +114,12 @@ const Signup = () => {
                     <Loader2 className="mr-2 animate-spin" size={18} /> Criando acesso...
                   </>
                 ) : (
-                  "Começar agora"
+                  "Comecar agora"
                 )}
               </Button>
             </form>
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Já possui conta?{" "}
+              Ja possui conta?{" "}
               <Link to="/login" className="font-semibold text-primary hover:underline">
                 Fazer login
               </Link>

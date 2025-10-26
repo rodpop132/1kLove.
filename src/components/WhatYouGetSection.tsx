@@ -5,11 +5,11 @@ import { listPublicRecipes, Recipe } from "@/lib/api";
 const staticFeatures = [
   {
     icon: Book,
-    text: "Webook digital com mais de 1.000 experiências",
+    text: "Webook digital com mais de 1.000 experiencias",
   },
   {
     icon: Calendar,
-    text: "Planos práticos de 7, 14 e 30 dias",
+    text: "Planos praticos de 7, 14 e 30 dias",
   },
   {
     icon: Mail,
@@ -17,11 +17,11 @@ const staticFeatures = [
   },
   {
     icon: Map,
-    text: "Guias de reconciliação em diferentes fases",
+    text: "Guias de reconciliacao em diferentes fases",
   },
   {
     icon: Infinity,
-    text: "Acesso vitalício à dashboard exclusiva",
+    text: "Acesso vitalicio a dashboard exclusiva",
   },
 ];
 
@@ -38,9 +38,9 @@ const WhatYouGetSection = () => {
         }
       })
       .catch((err) => {
-        console.warn("Não foi possível carregar receitas públicas:", err);
+        console.warn("Nao foi possivel carregar receitas publicas:", err);
         if (isMounted) {
-          setError("Receitas demonstrativas indisponíveis no momento.");
+          setError("Receitas demonstrativas indisponiveis no momento.");
         }
       });
 
@@ -54,18 +54,18 @@ const WhatYouGetSection = () => {
       <div className="container mx-auto max-w-4xl">
         <div className="mb-12 text-center animate-fade-up">
           <div className="mb-6 inline-block rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-            ✨ Conteúdo Exclusivo
+            Conteudo Exclusivo
           </div>
 
           <h2 className="text-3xl font-bold md:text-5xl">
-            O que você vai{" "}
+            O que voce vai{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
               receber
             </span>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-xl text-muted-foreground">
-            Tudo que você precisa para <span className="font-bold text-foreground">transformar</span> o relacionamento dia
-            após dia.
+            Tudo que voce precisa para <span className="font-bold text-foreground">transformar</span> o relacionamento
+            dia apos dia.
           </p>
         </div>
 
@@ -90,9 +90,7 @@ const WhatYouGetSection = () => {
         </div>
 
         <div className="mt-12 space-y-4 animate-fade-up">
-          <h3 className="text-center text-lg font-semibold text-foreground">
-            Degustação de receitas públicas liberadas
-          </h3>
+          <h3 className="text-center text-lg font-semibold text-foreground">Receitas publicas liberadas</h3>
           {error ? (
             <p className="text-center text-sm text-muted-foreground">{error}</p>
           ) : publicRecipes.length === 0 ? (
@@ -117,3 +115,4 @@ const WhatYouGetSection = () => {
 };
 
 export default WhatYouGetSection;
+

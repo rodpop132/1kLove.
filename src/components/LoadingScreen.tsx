@@ -5,15 +5,15 @@ interface LoadingScreenProps {
   onLoadingComplete: () => void;
 }
 
+const phrases = [
+  "Aquecendo o amor...",
+  "Preparando suas receitas de conexao...",
+  "Pronto para reacender sentimentos reais?",
+];
+
 const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
   const [currentPhrase, setCurrentPhrase] = useState(0);
   const [progress, setProgress] = useState(0);
-
-  const phrases = [
-    "Aquecendo o amor…",
-    "Preparando suas receitas de conexão…",
-    "Pronto para reacender sentimentos reais?",
-  ];
 
   useEffect(() => {
     const phraseInterval = setInterval(() => {
@@ -39,35 +39,26 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
   }, [onLoadingComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#0B1220] to-[#111827]">
-      <div className="flex flex-col items-center gap-8">
-        {/* Heart Animation */}
-        <div className="relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#0B1220] to-[#111827] px-6">
+      <div className="flex w-full max-w-md flex-col items-center gap-8 rounded-3xl border border-border/40 bg-background/40 p-10 text-center shadow-2xl backdrop-blur">
+        <div className="relative h-16 w-20">
+          <Heart className="absolute left-0 top-0 h-16 w-16 animate-pulse-heart text-primary" fill="currentColor" />
           <Heart
-            className="absolute left-0 top-0 text-primary animate-pulse-heart"
-            size={64}
-            fill="currentColor"
-          />
-          <Heart
-            className="absolute left-8 top-0 text-secondary animate-pulse-heart"
-            size={64}
+            className="absolute left-7 top-0 h-16 w-16 animate-pulse-heart text-secondary"
             fill="currentColor"
             style={{ animationDelay: "0.5s" }}
           />
         </div>
 
-        {/* Phrases */}
-        <p className="mt-24 text-xl font-medium text-foreground/90 animate-fade-up">
-          {phrases[currentPhrase]}
-        </p>
+        <p className="text-lg font-medium text-foreground/90 sm:text-xl">{phrases[currentPhrase]}</p>
 
-        {/* Progress Bar */}
-        <div className="w-80 h-2 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="h-2 w-full rounded-full bg-muted">
+          <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
+
+        <p className="text-xs text-muted-foreground sm:text-sm">
+          Esse aquecimento rapido garante uma experiencia inicial suave em qualquer dispositivo.
+        </p>
       </div>
     </div>
   );

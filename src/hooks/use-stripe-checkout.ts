@@ -28,9 +28,8 @@ export function useStripeCheckout() {
           ? err.message
           : err instanceof Error
             ? err.message
-            : "Não foi possível iniciar o checkout agora.";
+            : "Nao foi possivel iniciar o checkout agora.";
 
-      // fallback to static checkout link if provided
       if (FALLBACK_CHECKOUT_URL) {
         window.location.assign(FALLBACK_CHECKOUT_URL);
         return;

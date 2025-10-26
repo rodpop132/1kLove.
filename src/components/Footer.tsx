@@ -7,11 +7,10 @@ import { useStripeCheckout } from "@/hooks/use-stripe-checkout";
 import { Facebook, Heart, Instagram, Mail, ShieldCheck } from "lucide-react";
 
 const quickLinks = [
-  { label: "Início", href: "/" },
-  { label: "Sobre o webook", href: "#hero" },
-  { label: "Perguntas frequentes", href: "#faq" },
-  { label: "Termos de uso", href: "#" },
-  { label: "Política de privacidade", href: "#" },
+  { label: "Inicio", href: "/" },
+  { label: "Beneficios", href: "#hero" },
+  { label: "Oferta", href: "#offer" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 const socialLinks = [
@@ -24,46 +23,51 @@ const Footer = () => {
 
   return (
     <footer className="relative overflow-hidden border-t border-border bg-gradient-to-b from-background via-background/60 to-card">
-      {/* Background glow */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 left-10 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute -bottom-40 right-10 h-80 w-80 rounded-full bg-secondary/15 blur-3xl" />
+        <div className="absolute -top-24 left-10 h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
+        <div className="absolute -bottom-24 right-10 h-56 w-56 rounded-full bg-secondary/15 blur-3xl" />
       </div>
 
       <div className="container relative mx-auto max-w-6xl px-4 py-16">
-        <div className="grid gap-12 md:grid-cols-[1.3fr_1fr_1fr]">
-          {/* Brand */}
-          <div className="space-y-6 animate-fade-up">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr]">
+          <section className="space-y-6">
             <div className="flex items-center gap-3">
               <span className="rounded-lg bg-primary/10 p-2 text-primary">
                 <Heart size={26} fill="currentColor" />
               </span>
               <div>
                 <p className="text-lg font-semibold tracking-wide">1000 Receitas de Amor</p>
-                <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Rituais • Conversas • Conexão</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Rituais Conversas Conexao</p>
               </div>
             </div>
+
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Um webook prático para transformar relacionamentos com rituais diários, conversas profundas e experiências
-              que criam memórias significativas a dois.
+              Um webook pratico para transformar relacionamentos com rituais diarios, conversas profundas e desafios que
+              podem ser feitos mesmo em dias corridos.
             </p>
-            <div className="space-y-2">
-              <Button variant="hero" size="lg" className="group w-full sm:w-auto" onClick={redirectToCheckout} disabled={isRedirecting}>
+
+            <div className="space-y-3">
+              <Button
+                variant="hero"
+                size="lg"
+                className="w-full sm:w-auto"
+                onClick={redirectToCheckout}
+                disabled={isRedirecting}
+              >
                 {isRedirecting ? "Redirecionando..." : "Quero garantir meu acesso"}
               </Button>
               <p className="flex items-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck size={14} className="text-primary" />
-                Checkout 100% seguro via Stripe
+                Checkout protegido pela Stripe
               </p>
               {error && <p className="text-xs text-destructive">{error}</p>}
             </div>
-          </div>
+          </section>
 
-          {/* Links & contact */}
-          <div className="space-y-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+          <nav className="space-y-8">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">Mapa rápido</h3>
-              <nav className="mt-4 flex flex-col gap-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">Mapa rapido</h3>
+              <div className="mt-4 flex flex-col gap-3">
                 {quickLinks.map(({ label, href }) => (
                   <a
                     key={label}
@@ -73,15 +77,15 @@ const Footer = () => {
                     {label}
                   </a>
                 ))}
-              </nav>
+              </div>
             </div>
 
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">Contato</h3>
-              <div className="mt-4 space-y-4">
+              <div className="mt-4 space-y-4 text-sm text-muted-foreground">
                 <a
                   href="mailto:contato@receitasdeamor.com"
-                  className="flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-primary"
+                  className="flex items-center gap-3 transition-colors hover:text-primary"
                 >
                   <Mail size={18} />
                   contato@receitasdeamor.com
@@ -92,7 +96,7 @@ const Footer = () => {
                       key={label}
                       href={href}
                       aria-label={label}
-                      className="rounded-lg border border-border bg-muted/40 p-2 transition-all duration-300 hover:border-primary/60 hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_20px_rgba(225,29,72,0.25)]"
+                      className="rounded-lg border border-border bg-muted/40 p-2 transition-all duration-300 hover:border-primary/60 hover:bg-primary/10 hover:text-primary"
                     >
                       <Icon size={18} />
                     </a>
@@ -100,13 +104,12 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </nav>
 
-          {/* Login panel (direciona para páginas dedicadas) */}
-          <Card id="login" className="animate-fade-up backdrop-blur" style={{ animationDelay: "0.2s" }}>
+          <Card id="login" className="backdrop-blur">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">Acesse sua conta</CardTitle>
-              <CardDescription>Faça login ou crie uma conta para acompanhar as receitas favoritas.</CardDescription>
+              <CardDescription>Use o login dedicado para acompanhar os seus favoritos.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -117,42 +120,34 @@ const Footer = () => {
                 <Label htmlFor="footer-password">Senha</Label>
                 <Input id="footer-password" type="password" placeholder="********" autoComplete="current-password" />
               </div>
-              <div className="flex flex-col gap-3">
-                <Button asChild>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button asChild className="w-full sm:flex-1">
                   <Link to="/login">Login</Link>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="w-full sm:flex-1">
                   <Link to="/cadastro">Criar conta</Link>
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Em breve você poderá acessar o painel completo com receitas, favoritos e acompanhamento diário.
+                Em breve voce podera acompanhar progresso, favoritar receitas e receber notificacoes semanais.
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Security ribbon */}
-        <div className="mt-12 flex justify-center animate-fade-up" style={{ animationDelay: "0.35s" }}>
-          <div className="inline-flex items-center gap-3 rounded-full border border-border bg-muted/30 px-6 py-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-2 text-foreground">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-              Pagamento protegido por SSL
-            </span>
-            <span className="hidden h-4 w-px bg-border md:block" />
-            <span className="hidden md:block">Acesso imediato ao confirmar o pagamento</span>
-          </div>
+        <div className="mt-12 flex flex-col items-center gap-4 rounded-2xl border border-border bg-muted/20 px-6 py-4 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between">
+          <span className="flex items-center gap-2 text-foreground">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+            Pagamento protegido por SSL
+          </span>
+          <span>Acesso imediato ao confirmar o pagamento</span>
         </div>
 
-        {/* Bottom bar */}
-        <div
-          className="mt-12 border-t border-border pt-6 text-center text-xs text-muted-foreground animate-fade-up"
-          style={{ animationDelay: "0.45s" }}
-        >
-          <p>© {new Date().getFullYear()} 1000 Receitas de Amor. Todos os direitos reservados.</p>
+        <div className="mt-12 border-t border-border pt-6 text-center text-xs text-muted-foreground">
+          <p>{new Date().getFullYear()} 1000 Receitas de Amor. Todos os direitos reservados.</p>
           <p className="mt-2">
-            Material educativo. Resultados variam conforme o comprometimento do casal e não substituem acompanhamento
-            profissional quando necessário.
+            Material educativo. Resultados variam conforme o comprometimento do casal e nao substituem acompanhamento
+            profissional.
           </p>
         </div>
       </div>
@@ -161,4 +156,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

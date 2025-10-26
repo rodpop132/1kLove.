@@ -14,17 +14,17 @@ const CheckoutFailure = () => {
             <span className="rounded-full bg-destructive/20 p-4 text-destructive">
               <AlertTriangle size={40} />
             </span>
-            <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Pagamento não concluído</CardTitle>
+            <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Pagamento nao concluido</CardTitle>
             <CardDescription className="text-base text-muted-foreground sm:text-lg">
-              Parece que houve um problema ao finalizar a cobrança. Sem o pagamento, o acesso ao webook ainda não foi
+              Parece que houve um problema ao finalizar a cobranca. Sem o pagamento, o acesso ao webook ainda nao foi
               liberado.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="rounded-lg border border-destructive/30 bg-background/60 p-6 text-left text-sm leading-relaxed text-muted-foreground sm:text-base">
-              <p>• Confirme os dados do cartão ou tente outro método de pagamento.</p>
+              <p>- Confirme os dados do cartao ou tente outro metodo de pagamento.</p>
               <p className="mt-3">
-                • Se o problema continuar, fale conosco pelo e-mail{" "}
+                - Se o problema continuar, fale conosco pelo e-mail{" "}
                 <span className="font-semibold text-foreground">contato@receitasdeamor.com</span> para receber suporte
                 imediato.
               </p>
@@ -34,7 +34,7 @@ const CheckoutFailure = () => {
                 <Link to="/#offer">Tentar novamente</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/">Voltar para a página inicial</Link>
+                <Link to="/">Voltar para a pagina inicial</Link>
               </Button>
             </div>
           </CardContent>
@@ -45,4 +45,3 @@ const CheckoutFailure = () => {
 };
 
 export default CheckoutFailure;
-

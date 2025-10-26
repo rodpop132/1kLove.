@@ -3,117 +3,68 @@ import { Clock, Heart, MessageCircle } from "lucide-react";
 const solutions = [
   {
     icon: Clock,
-    pain: "Falta de tempo",
-    solution: "Rituais curtos que cabem no dia",
+    pain: "Rotina corrida",
+    solution: "Micro rituais de 10 minutos que cabem no intervalo de trabalho ou antes de dormir.",
   },
   {
     icon: Heart,
-    pain: "Distância emocional",
-    solution: "Prompts que destravam conversas profundas",
+    pain: "Distancia emocional",
+    solution: "Perguntas guiadas que desbloqueiam conversas profundas sem clima pesado.",
   },
   {
     icon: MessageCircle,
-    pain: "Discussões repetitivas",
-    solution: "Método simples para reconectar sem terapia",
+    pain: "Discussao repetida",
+    solution: "Um roteiro simples para transformar conflitos em combinados que funcionam.",
   },
 ];
 
 const PainSolutionSection = () => {
   return (
-    <section className="relative px-4 py-16 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-6xl">
-        {/* Transition Text */}
-        <div className="mx-auto mb-16 max-w-4xl animate-fade-up text-center sm:mb-20 sm:px-4">
-          <div className="mb-6 inline-block rounded-full border border-destructive/20 bg-destructive/10 px-4 py-2 text-sm text-destructive">
-            <span className="font-semibold">Se você se identifica com isso...</span>
+    <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background via-background/60 to-card" />
+      <div className="relative mx-auto max-w-6xl">
+        <div className="mx-auto mb-16 max-w-4xl text-center sm:mb-20 animate-fade-up">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-destructive/20 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
+            Se voce sente o relacionamento morno
           </div>
 
-          <h2 className="text-3xl font-bold leading-tight text-muted-foreground sm:text-4xl md:text-5xl">
-            Você sente que o relacionamento{" "}
-            <span className="relative inline-block">
-              <span className="bg-gradient-to-r from-destructive to-primary bg-clip-text text-transparent">
-                esfriou
-              </span>
-              <svg
-                className="absolute -bottom-2 left-0 w-full text-destructive/30"
-                height="8"
-                viewBox="0 0 100 8"
-                preserveAspectRatio="none"
-              >
-                <path d="M0,4 Q25,8 50,4 T100,4" stroke="currentColor" strokeWidth="2" fill="none" />
-              </svg>
-            </span>
-            , que as conversas ficaram{" "}
-            <span className="relative inline-block">
-              <span className="bg-gradient-to-r from-destructive to-primary bg-clip-text text-transparent">
-                curtas
-              </span>
-              <svg
-                className="absolute -bottom-2 left-0 w-full text-destructive/30"
-                height="8"
-                viewBox="0 0 100 8"
-                preserveAspectRatio="none"
-              >
-                <path d="M0,4 Q25,8 50,4 T100,4" stroke="currentColor" strokeWidth="2" fill="none" />
-              </svg>
-            </span>{" "}
-            e{" "}
-            <span className="relative inline-block">
-              <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent text-3xl sm:text-4xl md:text-5xl">
-                o carinho se perdeu na rotina?
-              </span>
-            </span>
+          <h2 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-5xl">
+            Voltar a sentir carinho genuino nao precisa ser complicado
           </h2>
 
-          <p className="mt-6 text-base text-muted-foreground sm:text-lg">
-            Não se preocupe. <span className="font-semibold text-foreground">Você não está sozinho(a)</span> — e tem solução. 💚
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            A maioria dos casais chega ate aqui depois de meses sem tempo, com conversas cada vez mais rapidas e
+            dificuldades para manter a chama acesa. O webook mostra um passo a passo pratico para reconectar sem precisar
+            de horas de terapia.
           </p>
         </div>
 
-        {/* Solution Cards */}
         <div className="mb-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {solutions.map((item, index) => {
             const Icon = item.icon;
             return (
-              <div
+              <article
                 key={item.pain}
-                className="group animate-fade-up rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 sm:p-7 md:p-8"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="group rounded-xl border border-border bg-card/80 p-6 transition-all duration-300 hover:border-primary/60 hover:shadow-lg sm:p-7 animate-fade-up"
+                style={{ animationDelay: `${index * 0.08}s` }}
               >
-                <div className="mb-6 inline-flex rounded-lg bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                  <Icon className="text-primary" size={28} />
+                <div className="mb-5 inline-flex rounded-xl bg-primary/10 p-3 text-primary transition-transform group-hover:scale-105">
+                  <Icon size={28} />
                 </div>
-                <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-foreground sm:text-xl">
-                  <span className="text-destructive">💔</span>
-                  {item.pain}
-                </h3>
-                <div className="my-4 h-px bg-border" />
-                <p className="leading-relaxed text-muted-foreground">
-                  <span className="font-semibold text-primary">→</span> {item.solution}
-                </p>
-              </div>
+                <h3 className="mb-3 text-lg font-semibold text-foreground sm:text-xl">{item.pain}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{item.solution}</p>
+              </article>
             );
           })}
         </div>
 
-        {/* Closing Statement */}
-        <div className="mx-auto max-w-3xl animate-fade-up text-center" style={{ animationDelay: "0.3s" }}>
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 p-6 sm:p-8">
-            <p className="mb-4 text-2xl font-bold">
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                "Webook +1.000 Receitas de Amor"
-              </span>
-            </p>
-            <p className="text-lg text-muted-foreground">
-              foi criado para{" "}
-              <span className="border-b-2 border-primary/30 font-bold text-foreground">casais reais</span>, com{" "}
-              <span className="border-b-2 border-secondary/30 font-bold text-foreground">rotinas reais</span>, que querem se{" "}
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent text-xl font-bold">
-                reencontrar
-              </span>
-              .
-            </p>
-          </div>
+        <div className="mx-auto max-w-3xl rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 p-6 text-center sm:p-10 animate-fade-up">
+          <p className="text-2xl font-bold text-foreground sm:text-3xl">Receba um mapa completo para reconectar</p>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Rotinas romanticas, desafios semanais, prompts de conversa e momentos surpreendentes sempre ao alcance do
+            seu celular.
+          </p>
         </div>
       </div>
     </section>
@@ -121,4 +72,3 @@ const PainSolutionSection = () => {
 };
 
 export default PainSolutionSection;
-

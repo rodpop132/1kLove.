@@ -29,8 +29,8 @@ const Login = () => {
     const result = await login(email, password);
     setIsLoading(false);
 
-    if (!result.success) {
-      setError(result.error ?? "Não foi possível acessar sua conta. Tente novamente.");
+    if (!result?.success) {
+      setError(result?.error ?? "Nao foi possivel aceder a sua conta. Tente novamente.");
       return;
     }
 
@@ -49,7 +49,7 @@ const Login = () => {
           <CardHeader className="space-y-3 text-center">
             <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Bem-vindo de volta</CardTitle>
             <CardDescription className="text-base text-muted-foreground sm:text-lg">
-              Acesse o painel para continuar suas experiências de conexão. Seus dados ficam protegidos e você poderá
+              Acesse o painel para continuar suas experiencias de conexao. Seus dados ficam protegidos e voce podera
               retomar de onde parou.
             </CardDescription>
           </CardHeader>
@@ -91,7 +91,7 @@ const Login = () => {
               </Button>
             </form>
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Ainda não tem conta?{" "}
+              Ainda nao tem conta?{" "}
               <Link to="/cadastro" className="font-semibold text-primary hover:underline">
                 Criar acesso
               </Link>

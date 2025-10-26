@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { healthCheck } from "@/lib/api";
 
 const marketingLinks = [
-  { label: "Benefícios", href: "/#hero" },
+  { label: "Beneficios", href: "/#hero" },
   { label: "Oferta", href: "/#offer" },
   { label: "FAQ", href: "/#faq" },
 ];
@@ -20,13 +20,7 @@ export const SiteHeader = () => {
 
   useEffect(() => {
     healthCheck()
-      .then((response) => {
-        if (response.ok) {
-          setHealth("online");
-        } else {
-          setHealth("offline");
-        }
-      })
+      .then((response) => setHealth(response.ok ? "online" : "offline"))
       .catch(() => setHealth("offline"));
   }, []);
 
@@ -37,12 +31,8 @@ export const SiteHeader = () => {
 
   const appLinks = useMemo(() => {
     const links: Array<{ label: string; to: string }> = [];
-    if (user) {
-      links.push({ label: "Dashboard", to: "/dashboard" });
-    }
-    if (admin) {
-      links.push({ label: "Admin", to: "/admin" });
-    }
+    if (user) links.push({ label: "Dashboard", to: "/dashboard" });
+    if (admin) links.push({ label: "Admin", to: "/admin" });
     return links;
   }, [admin, user]);
 
@@ -61,16 +51,13 @@ export const SiteHeader = () => {
           <span className="rounded-lg bg-primary/10 px-2 py-1 text-primary">1000</span>
           <span>Receitas de Amor</span>
           <span
-            className={`
-              hidden items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium md:flex
-              ${
-                health === "online"
-                  ? "border-emerald-500/40 text-emerald-400"
-                  : health === "offline"
-                    ? "border-destructive/40 text-destructive"
-                    : "border-border text-muted-foreground"
-              }
-            `}
+            className={`hidden items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium md:flex ${
+              health === "online"
+                ? "border-emerald-500/40 text-emerald-400"
+                : health === "offline"
+                  ? "border-destructive/40 text-destructive"
+                  : "border-border text-muted-foreground"
+            }`}
           >
             <span
               className={`h-2 w-2 rounded-full ${
@@ -85,7 +72,6 @@ export const SiteHeader = () => {
           </span>
         </Link>
 
-        {/* Desktop navigation */}
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
           {marketingLinks.map((item) => (
             <a key={item.label} href={marketingHref(item.href)} className="transition-colors hover:text-primary">
@@ -132,7 +118,6 @@ export const SiteHeader = () => {
           )}
         </div>
 
-        {/* Mobile toggle */}
         <Button
           variant="ghost"
           size="icon"
@@ -144,7 +129,6 @@ export const SiteHeader = () => {
         </Button>
       </div>
 
-      {/* Mobile menu */}
       {isOpen && (
         <div className="border-t border-border/60 bg-background/95 px-4 py-6 md:hidden">
           <div className="flex flex-col gap-4">
@@ -208,3 +192,4 @@ export const SiteHeader = () => {
 };
 
 export default SiteHeader;
+

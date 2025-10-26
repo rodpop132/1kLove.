@@ -47,7 +47,11 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<LoginResult>;
   register: (email: string, password: string) => Promise<RegisterResult>;
   logout: () => void;
-  adminLogin: (username: string, password: string) => Promise<{ success: boolean; error?: string; data?: AdminBootstrap }>;
+  refreshUser: () => Promise<LoginResult | null>;
+  adminLogin: (
+    username: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string; data?: AdminBootstrap }>;
   clearAdmin: () => void;
 };
 
@@ -90,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return {
         success: status === 201,
         status,
-        error: status === 409 ? "Conta já existe. Faça login para continuar." : undefined,
+        error: status === 409 ? "Conta ja existe. Faca login para continuar." : undefined,
       };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -105,6 +109,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setAdmin(null);
   }, []);
+
+  const refreshUser = useCallback(async (): Promise<LoginResult | null> => {
+    if (!user) {
+      return null;
+    }
+
+    try {
+      const response = await loginAccount(user.email, user.password);
+      setUser({ email: user.email, password: user.password, hasPaid: response.has_paid });
+      return { success: true, hasPaid: response.has_paid, message: response.message };
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Falha ao atualizar status do usuario.";
+      return { success: false, hasPaid: false, error: message };
+    }
+  }, [user]);
 
   const adminLogin = useCallback(
     async (username: string, password: string) => {
@@ -152,10 +176,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       register,
       logout,
+      refreshUser,
       adminLogin,
       clearAdmin,
     }),
-    [admin, clearAdmin, login, logout, register, user],
+    [admin, clearAdmin, login, logout, refreshUser, register, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -168,3 +193,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

@@ -14,17 +14,17 @@ const CheckoutSuccess = () => {
             <span className="rounded-full bg-primary/20 p-4 text-primary">
               <CheckCircle2 size={40} />
             </span>
-            <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Pagamento confirmado! 💘</CardTitle>
+            <CardTitle className="text-3xl font-bold text-foreground sm:text-4xl">Pagamento confirmado!</CardTitle>
             <CardDescription className="text-base text-muted-foreground sm:text-lg">
-              Seu acesso ao webook 1000 Receitas de Amor foi liberado. Em instantes você receberá um e-mail com os
-              detalhes e instruções de acesso.
+              Seu acesso ao webook 1000 Receitas de Amor foi liberado. Em instantes voce recebe um e-mail com os detalhes
+              e instrucoes de acesso.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="rounded-lg border border-primary/30 bg-background/60 p-6 text-left text-sm leading-relaxed text-muted-foreground sm:text-base">
-              <p>• O pagamento foi processado com segurança pela Stripe.</p>
+              <p>- O pagamento foi processado com seguranca pela Stripe.</p>
               <p className="mt-3">
-                • Você já pode acessar o dashboard e explorar as primeiras experiências para colocar em prática hoje
+                - Voce ja pode acessar o dashboard e explorar as primeiras experiencias para colocar em pratica hoje
                 mesmo.
               </p>
             </div>
@@ -33,7 +33,7 @@ const CheckoutSuccess = () => {
                 <Link to="/dashboard">Ir para o dashboard</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/">Voltar para a página inicial</Link>
+                <Link to="/">Voltar para a pagina inicial</Link>
               </Button>
             </div>
           </CardContent>
@@ -44,4 +44,3 @@ const CheckoutSuccess = () => {
 };
 
 export default CheckoutSuccess;
-
