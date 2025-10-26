@@ -7,7 +7,7 @@ const OfferSection = () => {
 
   return (
     <section id="offer" className="bg-card/50 px-4 py-16 sm:px-6 sm:py-20">
-      <div className="container mx-auto max-w-4xl">
+      <div className="container mx-auto max-w-5xl px-0 sm:px-0">
         <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-card to-background p-6 shadow-xl sm:p-10 animate-fade-up">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-14 h-56 w-56 rounded-full bg-secondary/20 blur-3xl" />
@@ -27,7 +27,7 @@ const OfferSection = () => {
             </p>
           </header>
 
-          <div className="mt-10 grid items-center gap-8 md:grid-cols-[1.2fr_1fr] md:gap-12">
+          <div className="mt-10 flex flex-col gap-8 md:grid md:grid-cols-[1.2fr_1fr] md:gap-12">
             <div
               className="space-y-6 text-center md:text-left animate-fade-up"
               style={{ animationDelay: "0.1s" }}
@@ -46,7 +46,7 @@ const OfferSection = () => {
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">valor promocional</p>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground sm:text-base">
+              <p className="mx-auto max-w-xs text-sm text-muted-foreground sm:max-w-none sm:text-base md:mx-0">
                 Em ate 12x de R$ 4,16 no cartao ou a vista no boleto/PIX.
               </p>
 
