@@ -36,6 +36,13 @@ type RequestOptions = RequestInit & {
   skipJson?: boolean;
 };
 
+const normaliseItems = <T>(payload: { items?: T[] } | T[] | undefined | null): T[] => {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.items)) return payload.items;
+  return [];
+};
+
 async function apiFetch<TResponse = unknown>(path: string, options: RequestOptions = {}) {
   const { skipJson, headers, ...rest } = options;
 
@@ -146,9 +153,10 @@ export async function getAdminRecipes(authHeader: string, params?: { category?: 
   if (params?.category) searchParams.set("category", params.category);
   if (params?.is_public) searchParams.set("is_public", params.is_public);
   const query = searchParams.toString();
-  return apiFetch<RecipeListResponse>(`/admin/recipes${query ? `?${query}` : ""}`, {
+  const payload = await apiFetch<RecipeListResponse | Recipe[]>(`/admin/recipes${query ? `?${query}` : ""}`, {
     headers: { Authorization: authHeader },
   });
+  return { items: normaliseItems(payload) };
 }
 
 export async function createAdminRecipe(authHeader: string, payload: AdminRecipePayload) {
@@ -193,9 +201,10 @@ type AdminUser = {
 };
 
 export async function getAdminUsers(authHeader: string) {
-  return apiFetch<{ items: AdminUser[] }>("/admin/users", {
+  const payload = await apiFetch<{ items: AdminUser[] } | AdminUser[]>("/admin/users", {
     headers: { Authorization: authHeader },
   });
+  return { items: normaliseItems(payload) };
 }
 
 type AdminPayment = {
@@ -207,7 +216,8 @@ type AdminPayment = {
 };
 
 export async function getAdminPayments(authHeader: string) {
-  return apiFetch<{ items: AdminPayment[] }>("/admin/payments", {
+  const payload = await apiFetch<{ items: AdminPayment[] } | AdminPayment[]>("/admin/payments", {
     headers: { Authorization: authHeader },
   });
+  return { items: normaliseItems(payload) };
 }
