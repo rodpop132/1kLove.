@@ -205,13 +205,40 @@ const Admin = () => {
 
   const formattedPayments = useMemo(() => {
     if (!adminData) return [];
-    return adminData.payments.map((payment) => ({
-      ...payment,
-      amount: (payment.amount_cents / 100).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: payment.currency.toUpperCase(),
-      }),
-    }));
+    return adminData.payments.map((payment) => {
+      const cents = Number.isFinite(payment.amount_cents) ? payment.amount_cents : 0;
+      const currencyCode = payment.currency ? payment.currency.toUpperCase() : "BRL";
+      return {
+        ...payment,
+        amount: (cents / 100).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: currencyCode,
+        }),
+      };
+    });
+  }, [adminData]);
+
+  const adminStatsSummary = useMemo(() => {
+    if (!adminData) return null;
+    const totalCents = Number.isFinite(adminData.stats.payments.total_amount_cents)
+      ? adminData.stats.payments.total_amount_cents
+      : 0;
+    const currencyCode = adminData.stats.payments.currency
+      ? adminData.stats.payments.currency.toUpperCase()
+      : "BRL";
+
+    return {
+      users: adminData.stats.users,
+      recipes: adminData.stats.recipes,
+      payments: {
+        ...adminData.stats.payments,
+        currencyCode,
+        totalFormatted: (totalCents / 100).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: currencyCode,
+        }),
+      },
+    };
   }, [adminData]);
 
   if (!admin) {
@@ -361,7 +388,7 @@ const Admin = () => {
             </CardContent>
           </Card>
 
-          {adminData && (
+          {adminStatsSummary && (
             <Card className="border border-border/60 bg-card/80">
               <CardHeader>
                 <CardTitle>Estatisticas gerais</CardTitle>
@@ -370,24 +397,18 @@ const Admin = () => {
               <CardContent className="space-y-4 text-sm text-muted-foreground">
                 <div>
                   <p className="font-semibold text-foreground">Utilizadores</p>
-                  <p>Total: {adminData.stats.users.total}</p>
-                  <p>Pagos: {adminData.stats.users.paid}</p>
+                  <p>Total: {adminStatsSummary.users.total}</p>
+                  <p>Pagos: {adminStatsSummary.users.paid}</p>
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">Receitas</p>
-                  <p>Total: {adminData.stats.recipes.total}</p>
-                  <p>Publicas: {adminData.stats.recipes.public}</p>
-                  <p>Premium: {adminData.stats.recipes.private}</p>
+                  <p>Total: {adminStatsSummary.recipes.total}</p>
+                  <p>Publicas: {adminStatsSummary.recipes.public}</p>
+                  <p>Premium: {adminStatsSummary.recipes.private}</p>
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">Pagamentos</p>
-                  <p>
-                    Faturamento:{" "}
-                    {(adminData.stats.payments.total_amount_cents / 100).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: adminData.stats.payments.currency.toUpperCase(),
-                    })}
-                  </p>
+                  <p>Faturamento: {adminStatsSummary.payments.totalFormatted}</p>
                 </div>
               </CardContent>
               <CardFooter>
