@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { listMyRecipes, Recipe } from "@/lib/api";
 import { useStripeCheckout } from "@/hooks/use-stripe-checkout";
+import { useToast } from "@/components/ui/use-toast";
 
 type CategorisedRecipes = Record<string, Recipe[]>;
 
@@ -15,11 +16,13 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const { redirectToCheckout, isRedirecting, error: checkoutError } = useStripeCheckout();
+  const { toast } = useToast();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
+  const [lastVerification, setLastVerification] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -34,6 +37,11 @@ const Dashboard = () => {
     setIsRefreshingStatus(true);
 
     refreshUser()
+      .then((result) => {
+        if (result?.success) {
+          setLastVerification(new Date());
+        }
+      })
       .catch((err) => console.warn("Falha ao validar status do usuario:", err))
       .finally(() => {
         if (!cancelled) {
@@ -75,6 +83,52 @@ const Dashboard = () => {
       isMounted = false;
     };
   }, [user]);
+
+  const handleVerifyPayment = useCallback(async () => {
+    if (!user) return;
+    setIsRefreshingStatus(true);
+    try {
+      const result = await refreshUser();
+      setLastVerification(new Date());
+
+      if (!result) {
+        toast({
+          title: "Nao foi possivel verificar agora",
+          description: "Tente novamente em alguns instantes.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (result.success) {
+        if (result.hasPaid) {
+          toast({
+            title: "Pagamento confirmado!",
+            description: "Seu acesso premium foi liberado. Recarregando receitas...",
+          });
+        } else {
+          toast({
+            title: "Pagamento ainda nao confirmado",
+            description: "A Stripe ainda nao confirmou o pagamento. Aguarde alguns segundos e tente novamente.",
+          });
+        }
+      } else {
+        toast({
+          title: "Nao foi possivel verificar",
+          description: result.error ?? "Tente novamente em alguns instantes.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Erro ao contactar o servidor",
+        description: err instanceof Error ? err.message : "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshingStatus(false);
+    }
+  }, [refreshUser, toast, user]);
 
   const recipesByCategory = useMemo(() => {
     return recipes.reduce<CategorisedRecipes>((acc, recipe) => {
@@ -227,12 +281,7 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={() => {
-                    setIsRefreshingStatus(true);
-                    refreshUser()
-                      .catch((err) => console.warn("Falha ao verificar status:", err))
-                      .finally(() => setIsRefreshingStatus(false));
-                  }}
+                  onClick={handleVerifyPayment}
                   disabled={isRefreshingStatus}
                   className="w-full sm:w-auto"
                 >
@@ -240,6 +289,11 @@ const Dashboard = () => {
                 </Button>
               </div>
               {checkoutError && <p className="text-sm text-destructive">{checkoutError}</p>}
+              {lastVerification && (
+                <p className="text-xs text-muted-foreground">
+                  Ultima verificacao manual: {lastVerification.toLocaleTimeString("pt-BR")}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Precisa de ajuda? Escreva para{" "}
                 <a href="mailto:contato@receitasdeamor.com" className="font-semibold text-primary hover:underline">
